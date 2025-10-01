@@ -57,33 +57,35 @@ const environmentSchema = z
       .default(12),
     COOKIE_SECRET: z.string().min(32, 'COOKIE_SECRET must be at least 32 characters'),
 
-    // Firebase
-    FIREBASE_PROJECT_ID: z.string().min(1, 'FIREBASE_PROJECT_ID is required'),
-    FIREBASE_PRIVATE_KEY_ID: z.string().min(1, 'FIREBASE_PRIVATE_KEY_ID is required'),
-    FIREBASE_PRIVATE_KEY: z.string().min(1, 'FIREBASE_PRIVATE_KEY is required'),
-    FIREBASE_CLIENT_EMAIL: z.string().email('FIREBASE_CLIENT_EMAIL must be a valid email'),
-    FIREBASE_CLIENT_ID: z.string().min(1, 'FIREBASE_CLIENT_ID is required'),
-    FIREBASE_AUTH_URI: z.string().url('FIREBASE_AUTH_URI must be a valid URL'),
-    FIREBASE_TOKEN_URI: z.string().url('FIREBASE_TOKEN_URI must be a valid URL'),
+    // Firebase (optional - for authentication)
+    FIREBASE_PROJECT_ID: z.string().optional(),
+    FIREBASE_PRIVATE_KEY_ID: z.string().optional(),
+    FIREBASE_PRIVATE_KEY: z.string().optional(),
+    FIREBASE_CLIENT_EMAIL: z.string().email('FIREBASE_CLIENT_EMAIL must be a valid email').or(z.literal('')).optional(),
+    FIREBASE_CLIENT_ID: z.string().optional(),
+    FIREBASE_AUTH_URI: z.string().url('FIREBASE_AUTH_URI must be a valid URL').or(z.literal('')).optional(),
+    FIREBASE_TOKEN_URI: z.string().url('FIREBASE_TOKEN_URI must be a valid URL').or(z.literal('')).optional(),
     FIREBASE_AUTH_PROVIDER_CERT_URL: z
       .string()
-      .url('FIREBASE_AUTH_PROVIDER_CERT_URL must be a valid URL'),
+      .url('FIREBASE_AUTH_PROVIDER_CERT_URL must be a valid URL')
+      .or(z.literal(''))
+      .optional(),
 
-    // Stripe
-    STRIPE_SECRET_KEY: z.string().min(1, 'STRIPE_SECRET_KEY is required'),
-    STRIPE_WEBHOOK_SECRET: z.string().min(1, 'STRIPE_WEBHOOK_SECRET is required'),
-    STRIPE_PUBLISHABLE_KEY: z.string().min(1, 'STRIPE_PUBLISHABLE_KEY is required'),
+    // Stripe (optional - for payments)
+    STRIPE_SECRET_KEY: z.string().optional(),
+    STRIPE_WEBHOOK_SECRET: z.string().optional(),
+    STRIPE_PUBLISHABLE_KEY: z.string().optional(),
 
-    // Email
-    SMTP_HOST: z.string().min(1, 'SMTP_HOST is required'),
+    // Email (optional - for notifications)
+    SMTP_HOST: z.string().optional(),
     SMTP_PORT: z
       .union([z.number(), stringToNumber])
       .refine(val => val >= 1 && val <= 65535, 'SMTP_PORT must be between 1 and 65535')
       .default(587),
     SMTP_SECURE: z.union([z.boolean(), stringToBoolean]).default(false),
-    SMTP_USER: z.string().min(1, 'SMTP_USER is required'),
-    SMTP_PASS: z.string().min(1, 'SMTP_PASS is required'),
-    EMAIL_FROM: z.string().email('EMAIL_FROM must be a valid email'),
+    SMTP_USER: z.string().optional(),
+    SMTP_PASS: z.string().optional(),
+    EMAIL_FROM: z.string().email('EMAIL_FROM must be a valid email').or(z.literal('')).optional(),
 
     // File Upload
     MAX_FILE_SIZE: z
@@ -95,12 +97,12 @@ const environmentSchema = z
       .union([z.array(z.string()), stringToArray])
       .default(['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx']),
 
-    // External APIs
-    SPOTONSITE_API_KEY: z.string().min(1, 'SPOTONSITE_API_KEY is required'),
-    SPOTONSITE_API_URL: z.string().url('SPOTONSITE_API_URL must be a valid URL'),
+    // External APIs (optional - for integrations)
+    SPOTONSITE_API_KEY: z.string().optional(),
+    SPOTONSITE_API_URL: z.string().url('SPOTONSITE_API_URL must be a valid URL').or(z.literal('')).optional(),
 
-    // Redis
-    REDIS_URL: z.string().url('REDIS_URL must be a valid URL'),
+    // Redis (optional - for caching)
+    REDIS_URL: z.string().url('REDIS_URL must be a valid URL').or(z.literal('')).optional(),
     REDIS_PASSWORD: z.string().optional(),
 
     // Logging

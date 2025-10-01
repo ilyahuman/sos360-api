@@ -1,4 +1,4 @@
-# Deploy to Railway.com
+# Deploy to Railway.com (Sandbox)
 
 ## Quick Setup
 
@@ -15,13 +15,12 @@
 4. **Set environment variables** in Railway dashboard:
    ```
    NODE_ENV=production
-   PORT=3002
    API_VERSION=v1
    APP_NAME=SOS360-API
 
-   JWT_SECRET=your-secret-here-min-32-chars
-   JWT_REFRESH_SECRET=your-refresh-secret-here
-   COOKIE_SECRET=your-cookie-secret-here
+   JWT_SECRET=sandbox-jwt-secret-minimum-64-chars-for-testing-purposes-only-change
+   JWT_REFRESH_SECRET=sandbox-jwt-refresh-minimum-64-chars-for-testing-purposes-change
+   COOKIE_SECRET=sandbox-cookie-secret-minimum-64-chars-for-testing-purposes-change
    ```
 
 5. **Deploy**
@@ -57,14 +56,15 @@ https://your-app.railway.app/health
 
 - `DATABASE_URL` - Auto-set by Railway PostgreSQL
 - `NODE_ENV` - Set to "production"
-- `PORT` - Auto-set by Railway
-- `JWT_SECRET` - Set manually (min 32 chars)
-- `JWT_REFRESH_SECRET` - Set manually
-- `COOKIE_SECRET` - Set manually
+- `PORT` - Auto-set by Railway (default: 3002)
+- `JWT_SECRET` - Set manually (min 64 chars in production)
+- `JWT_REFRESH_SECRET` - Set manually (min 64 chars in production)
+- `COOKIE_SECRET` - Set manually (min 64 chars in production)
 
 ## Optional Variables
 
-- Firebase, Stripe, SMTP configs (see `.env.docker` for reference)
+All other services (Firebase, Stripe, SMTP, Redis, SpotOnSite) are optional.
+Leave them unset or set to empty strings if not needed.
 
 ## Logs
 

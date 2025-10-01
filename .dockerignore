@@ -24,13 +24,11 @@ logs
 .git
 .gitignore
 
-# Docker
-docker-compose*.yml
-Dockerfile*
-DOCKER.md
-
-# Misc
+# Documentation (keep RAILWAY.md for reference)
 *.md
 !README.md
+!RAILWAY.md
+
+# Test files
 test-*.ts
 test-*.js
