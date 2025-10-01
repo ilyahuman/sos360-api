@@ -25,8 +25,9 @@ export class ContactService {
     companyId: string,
     userId: string
   ): Promise<ContactResponseDTO> {
-    // TODO: Add auth check - user must belong to company
-    // const user = await authService.validateUserCompany(userId, companyId);
+    // TODO(!!!): Add auth check when User/Auth module is implemented
+    // This should verify that the user belongs to the company and has permission to create contacts
+    // Example: const user = await authService.validateUserCompany(userId, companyId);
 
     // Check for duplicate email if provided
     if (data.email) {
@@ -128,8 +129,8 @@ export class ContactService {
     filters: ContactFiltersDTO = {},
     pagination: PaginationDTO = {}
   ): Promise<ContactListResponseDTO> {
-    // TODO: Add auth check
-    // await authService.validateUserCompany(userId, companyId);
+    // TODO(!!!): Add auth check when User/Auth module is implemented
+    // Example: await authService.validateUserCompany(userId, companyId);
 
     const { contacts, total } = await this.contactRepository.findAll(
       companyId,
@@ -155,8 +156,8 @@ export class ContactService {
     companyId: string,
     userId: string
   ): Promise<ContactResponseDTO | null> {
-    // TODO: Add auth check
-    // await authService.validateUserCompany(userId, companyId);
+    // TODO(!!!): Add auth check when User/Auth module is implemented
+    // Example: await authService.validateUserCompany(userId, companyId);
 
     const existingContact = await this.contactRepository.findById(id);
     if (!existingContact) {
@@ -193,8 +194,8 @@ export class ContactService {
     companyId: string,
     userId: string
   ): Promise<ContactResponseDTO | null> {
-    // TODO: Add auth check
-    // await authService.validateUserCompany(userId, companyId);
+    // TODO(!!!): Add auth check when User/Auth module is implemented
+    // Example: await authService.validateUserCompany(userId, companyId);
 
     const existingContact = await this.contactRepository.findById(id);
     if (!existingContact) {
@@ -210,7 +211,9 @@ export class ContactService {
       });
       return null;
     }
-    // TODO: Validate assigned user when auth is implemented
+    // TODO(!!!): Validate assigned user when User/Auth module is implemented
+    // This should verify the assigned user exists and belongs to the same company
+    // Example:
     // if (assignedUserId) {
     //   await authService.validateUserCompany(assignedUserId, companyId);
     // }
@@ -235,8 +238,8 @@ export class ContactService {
     companyId: string,
     userId: string
   ): Promise<ContactResponseDTO | null> {
-    // TODO: Add auth check
-    // await authService.validateUserCompany(userId, companyId);
+    // TODO(!!!): Add auth check when User/Auth module is implemented
+    // Example: await authService.validateUserCompany(userId, companyId);
 
     const existingContact = await this.contactRepository.findById(id);
     if (!existingContact) {
@@ -267,8 +270,8 @@ export class ContactService {
   }
 
   async softDeleteContact(id: string, companyId: string, userId: string): Promise<boolean> {
-    // TODO: Add auth check
-    // await authService.validateUserCompany(userId, companyId);
+    // TODO(!!!): Add auth check when User/Auth module is implemented
+    // Example: await authService.validateUserCompany(userId, companyId);
 
     const existingContact = await this.contactRepository.findById(id);
     if (!existingContact) {
@@ -302,8 +305,9 @@ export class ContactService {
     companyId: string,
     userId: string
   ): Promise<ContactResponseDTO | null> {
-    // TODO: Add auth check - admin only
-    // await authService.validateAdminUser(userId, companyId);
+    // TODO(!!!): Add auth check when User/Auth module is implemented - admin only
+    // This should verify the user has admin permissions
+    // Example: await authService.validateAdminUser(userId, companyId);
 
     const existingContact = await this.contactRepository.findById(id);
     if (!existingContact) {
@@ -338,8 +342,8 @@ export class ContactService {
   }
 
   async getContactStats(companyId: string, divisionId?: string): Promise<ContactStatsDTO> {
-    // TODO: Add auth check
-    // await authService.validateUserCompany(userId, companyId);
+    // TODO(!!!): Add auth check when User/Auth module is implemented
+    // Example: await authService.validateUserCompany(userId, companyId);
 
     const stats = await this.contactRepository.getStats(companyId, divisionId);
 
@@ -364,8 +368,8 @@ export class ContactService {
     companyId: string,
     limit: number = 10
   ): Promise<ContactResponseDTO[]> {
-    // TODO: Add auth check
-    // await authService.validateUserCompany(userId, companyId);
+    // TODO(!!!): Add auth check when User/Auth module is implemented
+    // Example: await authService.validateUserCompany(userId, companyId);
 
     const contacts = await this.contactRepository.getOverdueFollowUps(companyId, limit);
     return ContactDTOMapper.toResponseList(contacts);
@@ -375,8 +379,8 @@ export class ContactService {
     companyId: string,
     assignedUserId?: string
   ): Promise<ContactResponseDTO[]> {
-    // TODO: Add auth check
-    // await authService.validateUserCompany(userId, companyId);
+    // TODO(!!!): Add auth check when User/Auth module is implemented
+    // Example: await authService.validateUserCompany(userId, companyId);
 
     const contacts = await this.contactRepository.getTodayFollowUps(companyId, assignedUserId);
     return ContactDTOMapper.toResponseList(contacts);

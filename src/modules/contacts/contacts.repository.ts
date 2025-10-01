@@ -84,7 +84,7 @@ export class ContactRepository {
     try {
       return await this.prisma.contact.update({
         where: { id },
-        data: input,
+        data: input as any,
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -100,8 +100,8 @@ export class ContactRepository {
         where: { id },
         data: {
           leadStatus: leadStatus as any,
-          // TODO: Use actual user ID when auth is implemented
-          updater: { connect: { id: userId } },
+          // TODO(!!!): Use actual authenticated user ID when User/Auth module is implemented
+          updatedBy: userId,
           updatedAt: new Date(),
         },
       });
@@ -119,8 +119,8 @@ export class ContactRepository {
         where: { id },
         data: {
           assignedUserId,
-          // TODO: Use actual user ID when auth is implemented
-          updater: { connect: { id: userId } },
+          // TODO(!!!): Use actual authenticated user ID when User/Auth module is implemented
+          updatedBy: userId,
           updatedAt: new Date(),
         },
       });
@@ -147,8 +147,8 @@ export class ContactRepository {
           nextFollowUpDate,
           lastContactDate: new Date(),
           followUpCount: contact.followUpCount + 1,
-          // TODO: Use actual user ID when auth is implemented
-          updater: { connect: { id: userId } },
+          // TODO(!!!): Use actual authenticated user ID when User/Auth module is implemented
+          updatedBy: userId,
           updatedAt: new Date(),
         },
       });
@@ -167,8 +167,8 @@ export class ContactRepository {
         data: {
           deletedAt: new Date(),
           isActive: false,
-          // TODO: Use actual user ID when auth is implemented
-          updater: { connect: { id: userId } },
+          // TODO(!!!): Use actual authenticated user ID when User/Auth module is implemented
+          updatedBy: userId,
           updatedAt: new Date(),
         },
       });
@@ -187,8 +187,8 @@ export class ContactRepository {
         data: {
           deletedAt: null,
           isActive: true,
-          // TODO: Use actual user ID when auth is implemented
-          updater: { connect: { id: userId } },
+          // TODO(!!!): Use actual authenticated user ID when User/Auth module is implemented
+          updatedBy: userId,
           updatedAt: new Date(),
         },
       });

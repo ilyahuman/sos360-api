@@ -61,10 +61,22 @@ const environmentSchema = z
     FIREBASE_PROJECT_ID: z.string().optional(),
     FIREBASE_PRIVATE_KEY_ID: z.string().optional(),
     FIREBASE_PRIVATE_KEY: z.string().optional(),
-    FIREBASE_CLIENT_EMAIL: z.string().email('FIREBASE_CLIENT_EMAIL must be a valid email').or(z.literal('')).optional(),
+    FIREBASE_CLIENT_EMAIL: z
+      .string()
+      .email('FIREBASE_CLIENT_EMAIL must be a valid email')
+      .or(z.literal(''))
+      .optional(),
     FIREBASE_CLIENT_ID: z.string().optional(),
-    FIREBASE_AUTH_URI: z.string().url('FIREBASE_AUTH_URI must be a valid URL').or(z.literal('')).optional(),
-    FIREBASE_TOKEN_URI: z.string().url('FIREBASE_TOKEN_URI must be a valid URL').or(z.literal('')).optional(),
+    FIREBASE_AUTH_URI: z
+      .string()
+      .url('FIREBASE_AUTH_URI must be a valid URL')
+      .or(z.literal(''))
+      .optional(),
+    FIREBASE_TOKEN_URI: z
+      .string()
+      .url('FIREBASE_TOKEN_URI must be a valid URL')
+      .or(z.literal(''))
+      .optional(),
     FIREBASE_AUTH_PROVIDER_CERT_URL: z
       .string()
       .url('FIREBASE_AUTH_PROVIDER_CERT_URL must be a valid URL')
@@ -99,7 +111,11 @@ const environmentSchema = z
 
     // External APIs (optional - for integrations)
     SPOTONSITE_API_KEY: z.string().optional(),
-    SPOTONSITE_API_URL: z.string().url('SPOTONSITE_API_URL must be a valid URL').or(z.literal('')).optional(),
+    SPOTONSITE_API_URL: z
+      .string()
+      .url('SPOTONSITE_API_URL must be a valid URL')
+      .or(z.literal(''))
+      .optional(),
 
     // Redis (optional - for caching)
     REDIS_URL: z.string().url('REDIS_URL must be a valid URL').or(z.literal('')).optional(),
@@ -111,7 +127,7 @@ const environmentSchema = z
     LOG_MAX_SIZE: z.string().default('20m'),
 
     // CORS
-    CORS_ORIGIN: z.union([z.array(z.string()), stringToArray]).default(['http://localhost:3001']),
+    CORS_ORIGIN: z.union([z.array(z.string()), stringToArray]).default(['http://localhost:3000']),
     CORS_METHODS: z
       .union([z.array(z.string()), stringToArray])
       .default(['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS']),

@@ -307,16 +307,16 @@ export class ContactDTOMapper {
     dto: CreateContactDTO,
     companyId: string,
     userId: string
-  ): Prisma.ContactCreateInput {
+  ): Prisma.ContactUncheckedCreateInput {
     return {
       // Company relationship
-      company: { connect: { id: companyId } },
+      companyId,
       // Required fields
       firstName: dto.firstName,
       lastName: dto.lastName,
 
       // Division relationship (optional)
-      ...(dto.divisionId && { division: { connect: { id: dto.divisionId } } }),
+      ...(dto.divisionId && { divisionId: dto.divisionId }),
 
       // Optional personal info
       email: dto.email ?? null,
@@ -359,16 +359,16 @@ export class ContactDTOMapper {
       // Status
       isActive: true,
 
-      // Audit - TODO: Use actual user IDs when auth is implemented
-      creator: { connect: { id: userId } },
-      updater: { connect: { id: userId } },
+      // Audit - TODO(!!!): Use actual authenticated user IDs when User/Auth module is implemented
+      createdBy: userId,
+      updatedBy: userId,
     };
   }
 
-  static toUpdateInput(dto: UpdateContactDTO, userId: string): Prisma.ContactUpdateInput {
-    const updateData: Prisma.ContactUpdateInput = {
-      // TODO: Use actual user ID when auth is implemented
-      updater: { connect: { id: userId } },
+  static toUpdateInput(dto: UpdateContactDTO, userId: string): Prisma.ContactUncheckedUpdateInput {
+    const updateData: Prisma.ContactUncheckedUpdateInput = {
+      // TODO(!!!): Use actual authenticated user ID when User/Auth module is implemented
+      updatedBy: userId,
       updatedAt: new Date(),
     };
 
@@ -382,9 +382,7 @@ export class ContactDTOMapper {
 
     // Division Assignment
     if (dto.divisionId !== undefined) {
-      updateData.division = dto.divisionId
-        ? { connect: { id: dto.divisionId } }
-        : { disconnect: true };
+      updateData.divisionId = dto.divisionId;
     }
 
     // Classification

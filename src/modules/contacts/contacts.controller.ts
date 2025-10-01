@@ -36,9 +36,11 @@ export class ContactController {
         return;
       }
 
-      // TODO: Get companyId and userId from auth middleware
-      const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad'; // Temporary - using test company
-      const userId = 'f57fe551-7270-47d7-9080-0bce2ac29b01'; // TODO: Get from auth middleware - using test user
+      // TODO(!!!): Replace with real auth implementation when User/Auth module is ready
+      // This is a temporary placeholder - should be replaced with:
+      // const { userId, companyId } = req.user; // from auth middleware
+      const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
+      const userId = '025c88e6-7a0a-4aac-91a2-6ee03c2abbae'; // System placeholder user - replace with authenticated user
 
       const contact = await this.contactService.createContact(
         req.body,
@@ -92,7 +94,7 @@ export class ContactController {
         return;
       }
 
-      // TODO: Get companyId from auth to verify ownership
+      // TODO(!!!): Get companyId from auth to verify ownership when User/Auth module is ready
       const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
 
       const contact = await this.contactService.getContactById(id, companyId);
@@ -145,9 +147,9 @@ export class ContactController {
         return;
       }
 
-      // TODO: Get companyId and userId from auth
+      // TODO(!!!): Get companyId and userId from auth when User/Auth module is ready
       const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
-      const userId = 'f57fe551-7270-47d7-9080-0bce2ac29b01'; // TODO: Get from auth middleware - using test user
+      const userId = '025c88e6-7a0a-4aac-91a2-6ee03c2abbae'; // System placeholder user
 
       logger.info('Update contact request', {
         contactId: id,
@@ -205,7 +207,7 @@ export class ContactController {
    */
   getAllContacts = async (req: Request, res: Response): Promise<void> => {
     try {
-      // TODO: Get companyId from auth
+      // TODO(!!!): Get companyId from auth when User/Auth module is ready
       const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
 
       // Parse filters from query params
@@ -282,9 +284,9 @@ export class ContactController {
         return;
       }
 
-      // TODO: Get companyId and userId from auth
-      const companyId = req.headers['x-company-id'] as string || 'test-company';
-      const userId = 'system';
+      // TODO(!!!): Get companyId and userId from auth when User/Auth module is ready
+      const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
+      const userId = '025c88e6-7a0a-4aac-91a2-6ee03c2abbae'; // System placeholder user
 
       const contact = await this.contactService.updateLeadStatus(
         id,
@@ -332,9 +334,9 @@ export class ContactController {
         return;
       }
 
-      // TODO: Get companyId and userId from auth
-      const companyId = req.headers['x-company-id'] as string || 'test-company';
-      const userId = 'system';
+      // TODO(!!!): Get companyId and userId from auth when User/Auth module is ready
+      const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
+      const userId = '025c88e6-7a0a-4aac-91a2-6ee03c2abbae'; // System placeholder user
 
       const contact = await this.contactService.assignContact(
         id,
@@ -382,9 +384,9 @@ export class ContactController {
         return;
       }
 
-      // TODO: Get companyId and userId from auth
-      const companyId = req.headers['x-company-id'] as string || 'test-company';
-      const userId = 'system';
+      // TODO(!!!): Get companyId and userId from auth when User/Auth module is ready
+      const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
+      const userId = '025c88e6-7a0a-4aac-91a2-6ee03c2abbae'; // System placeholder user
 
       const followUpDate = nextFollowUpDate ? new Date(nextFollowUpDate) : null;
 
@@ -433,9 +435,9 @@ export class ContactController {
         return;
       }
 
-      // TODO: Get companyId and userId from auth
-      const companyId = req.headers['x-company-id'] as string || 'test-company';
-      const userId = 'system';
+      // TODO(!!!): Get companyId and userId from auth when User/Auth module is ready
+      const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
+      const userId = '025c88e6-7a0a-4aac-91a2-6ee03c2abbae'; // System placeholder user
 
       const deleted = await this.contactService.softDeleteContact(id, companyId, userId);
 
@@ -476,9 +478,9 @@ export class ContactController {
         return;
       }
 
-      // TODO: Get companyId and userId from auth, verify admin role
+      // TODO(!!!): Get companyId and userId from auth, verify admin role when User/Auth module is ready
       const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
-      const userId = 'f57fe551-7270-47d7-9080-0bce2ac29b01';
+      const userId = '025c88e6-7a0a-4aac-91a2-6ee03c2abbae'; // System placeholder user
 
       const contact = await this.contactService.restoreContact(id, companyId, userId);
 
@@ -510,7 +512,7 @@ export class ContactController {
    */
   getContactStats = async (req: Request, res: Response): Promise<void> => {
     try {
-      // TODO: Get companyId from auth
+      // TODO(!!!): Get companyId from auth when User/Auth module is ready
       const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
       const divisionId = req.query.divisionId as string;
 
@@ -536,7 +538,7 @@ export class ContactController {
    */
   getOverdueFollowUps = async (req: Request, res: Response): Promise<void> => {
     try {
-      // TODO: Get companyId from auth
+      // TODO(!!!): Get companyId from auth when User/Auth module is ready
       const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
       const limit = parseInt(req.query.limit as string) || 10;
 
@@ -562,7 +564,7 @@ export class ContactController {
    */
   getTodayFollowUps = async (req: Request, res: Response): Promise<void> => {
     try {
-      // TODO: Get companyId from auth
+      // TODO(!!!): Get companyId from auth when User/Auth module is ready
       const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
       const assignedUserId = req.query.assignedUserId as string;
 
