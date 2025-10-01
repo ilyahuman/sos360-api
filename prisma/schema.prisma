@@ -522,14 +522,14 @@ model Contact {
   // Audit Trail
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  createdBy String
-  updatedBy String
+  createdBy String?
+  updatedBy String?
 
   // Relationships
   company   Company   @relation(fields: [companyId], references: [id], onDelete: Restrict)
   division  Division? @relation(fields: [divisionId], references: [id], onDelete: SetNull)
-  creator   User      @relation("ContactCreator", fields: [createdBy], references: [id])
-  updater   User      @relation("ContactUpdater", fields: [updatedBy], references: [id])
+  creator   User?     @relation("ContactCreator", fields: [createdBy], references: [id])
+  updater   User?     @relation("ContactUpdater", fields: [updatedBy], references: [id])
 
   // Business relationships
   properties         Property[]

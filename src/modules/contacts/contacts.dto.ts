@@ -306,7 +306,7 @@ export class ContactDTOMapper {
   static toCreateInput(
     dto: CreateContactDTO,
     companyId: string,
-    userId: string
+    userId: string | null
   ): Prisma.ContactUncheckedCreateInput {
     return {
       // Company relationship
@@ -360,8 +360,7 @@ export class ContactDTOMapper {
       isActive: true,
 
       // Audit - TODO(!!!): Use actual authenticated user IDs when User/Auth module is implemented
-      createdBy: userId,
-      updatedBy: userId,
+      ...(userId && { createdBy: userId, updatedBy: userId }),
     };
   }
 

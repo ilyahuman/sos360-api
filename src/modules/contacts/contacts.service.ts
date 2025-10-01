@@ -23,7 +23,7 @@ export class ContactService {
   async createContact(
     data: CreateContactDTO,
     companyId: string,
-    userId: string
+    userId: string | null
   ): Promise<ContactResponseDTO> {
     // TODO(!!!): Add auth check when User/Auth module is implemented
     // This should verify that the user belongs to the company and has permission to create contacts

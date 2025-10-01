@@ -7,8 +7,15 @@ import dotenv from 'dotenv';
 import { z } from 'zod';
 import { logger } from '@/shared/utils/logger';
 
-// Load environment variables from .env files
-dotenv.config();
+// Load environment-specific file based on NODE_ENV
+const envFile =
+  process.env.NODE_ENV === 'production'
+    ? '.env.production.local'
+    : process.env.NODE_ENV === 'staging'
+      ? '.env.staging'
+      : '.env';
+
+dotenv.config({ path: envFile });
 
 // Helper functions for Zod transformations
 const stringToNumber = z.string().transform(val => {

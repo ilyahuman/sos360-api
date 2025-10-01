@@ -40,7 +40,7 @@ export class ContactController {
       // This is a temporary placeholder - should be replaced with:
       // const { userId, companyId } = req.user; // from auth middleware
       const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
-      const userId = '025c88e6-7a0a-4aac-91a2-6ee03c2abbae'; // System placeholder user - replace with authenticated user
+      const userId = null; // Will be replaced with authenticated user ID when auth module is ready
 
       const contact = await this.contactService.createContact(
         req.body,

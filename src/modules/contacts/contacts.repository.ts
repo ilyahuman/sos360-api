@@ -15,7 +15,7 @@ import {
 export class ContactRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async create(data: CreateContactDTO, companyId: string, userId: string): Promise<Contact> {
+  async create(data: CreateContactDTO, companyId: string, userId: string | null): Promise<Contact> {
     const input = ContactDTOMapper.toCreateInput(data, companyId, userId);
     return await this.prisma.contact.create({
       data: input,
