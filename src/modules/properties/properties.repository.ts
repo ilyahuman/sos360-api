@@ -225,7 +225,7 @@ export class PropertyRepository {
           id,
           companyId,
         },
-        data: input,
+        data: input as any,
         include: {
           primaryContact: {
             select: {
@@ -263,9 +263,8 @@ export class PropertyRepository {
         data: {
           deletedAt: new Date(),
           isActive: false,
-          updater: {
-            connect: { id: userId },
-          },
+          // TODO(!!!): Use actual authenticated user ID when User/Auth module is implemented
+          updatedBy: userId,
           updatedAt: new Date(),
         },
       });
@@ -426,12 +425,9 @@ export class PropertyRepository {
           companyId,
         },
         data: {
-          division: {
-            connect: { id: divisionId },
-          },
-          updater: {
-            connect: { id: userId },
-          },
+          divisionId,
+          // TODO(!!!): Use actual authenticated user ID when User/Auth module is implemented
+          updatedBy: userId,
           updatedAt: new Date(),
         },
         include: {

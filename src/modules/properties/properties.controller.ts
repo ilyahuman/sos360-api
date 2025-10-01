@@ -12,7 +12,7 @@ import { CreatePropertyRequest, UpdatePropertyRequest } from './properties.types
 export class PropertyController {
   constructor(private propertyService: PropertyService) {}
 
-  // TODO: Replace 'system' and 'test-company-id' with actual authenticated user/company when auth is implemented
+  // TODO(!!!): Replace placeholder IDs with actual authenticated user/company when User/Auth module is implemented
 
   list = async (req: Request, res: Response): Promise<void> => {
     const errors = validationResult(req);
@@ -25,8 +25,8 @@ export class PropertyController {
       return;
     }
 
-    // TODO: Get companyId from authenticated request
-    const companyId = req.headers['x-company-id'] as string || 'test-company-id';
+    // TODO(!!!): Get companyId from authenticated request when User/Auth module is implemented
+    const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
 
     const filters = {
       propertyType: req.query.propertyType as any,
@@ -75,8 +75,8 @@ export class PropertyController {
     }
 
     const propertyId = req.params.id!;
-    // TODO: Get companyId from authenticated request
-    const companyId = req.headers['x-company-id'] as string || 'test-company-id';
+    // TODO(!!!): Get companyId from authenticated request when User/Auth module is implemented
+    const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
 
     try {
       const property = await this.propertyService.getPropertyById(propertyId, companyId);
@@ -115,8 +115,8 @@ export class PropertyController {
     }
 
     const contactId = req.params.contactId!;
-    // TODO: Get companyId from authenticated request
-    const companyId = req.headers['x-company-id'] as string || 'test-company-id';
+    // TODO(!!!): Get companyId from authenticated request when User/Auth module is implemented
+    const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
 
     try {
       const properties = await this.propertyService.getPropertiesByContact(contactId, companyId);
@@ -147,8 +147,8 @@ export class PropertyController {
     }
 
     const divisionId = req.params.divisionId!;
-    // TODO: Get companyId from authenticated request
-    const companyId = req.headers['x-company-id'] as string || 'test-company-id';
+    // TODO(!!!): Get companyId from authenticated request when User/Auth module is implemented
+    const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
 
     try {
       const properties = await this.propertyService.getPropertiesByDivision(divisionId, companyId);
@@ -181,8 +181,8 @@ export class PropertyController {
     const lat = parseFloat(req.query.lat as string);
     const lng = parseFloat(req.query.lng as string);
     const radius = req.query.radius ? parseFloat(req.query.radius as string) : 10;
-    // TODO: Get companyId from authenticated request
-    const companyId = req.headers['x-company-id'] as string || 'test-company-id';
+    // TODO(!!!): Get companyId from authenticated request when User/Auth module is implemented
+    const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
 
     try {
       const properties = await this.propertyService.searchPropertiesByLocation(
@@ -218,9 +218,9 @@ export class PropertyController {
     }
 
     const createData: CreatePropertyRequest = req.body;
-    // TODO: Get userId and companyId from authenticated request
-    const userId = req.headers['x-user-id'] as string || 'system';
-    const companyId = req.headers['x-company-id'] as string || 'test-company-id';
+    // TODO(!!!): Get userId and companyId from authenticated request when User/Auth module is implemented
+    const userId = '025c88e6-7a0a-4aac-91a2-6ee03c2abbae'; // System placeholder user
+    const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
 
     logger.info('Creating new property', {
       companyId,
@@ -274,9 +274,9 @@ export class PropertyController {
 
     const propertyId = req.params.id!;
     const updateData: UpdatePropertyRequest = req.body;
-    // TODO: Get userId and companyId from authenticated request
-    const userId = req.headers['x-user-id'] as string || 'system';
-    const companyId = req.headers['x-company-id'] as string || 'test-company-id';
+    // TODO(!!!): Get userId and companyId from authenticated request when User/Auth module is implemented
+    const userId = '025c88e6-7a0a-4aac-91a2-6ee03c2abbae'; // System placeholder user
+    const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
 
     logger.info('Updating property', {
       propertyId,
@@ -371,8 +371,8 @@ export class PropertyController {
 
   restore = async (req: Request, res: Response): Promise<void> => {
     const propertyId = req.params.id!;
-    // TODO: Get companyId from authenticated request
-    const companyId = req.headers['x-company-id'] as string || 'test-company-id';
+    // TODO(!!!): Get companyId from authenticated request when User/Auth module is implemented
+    const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
 
     logger.info('Restoring property', {
       propertyId,
@@ -405,8 +405,8 @@ export class PropertyController {
   };
 
   getStats = async (req: Request, res: Response): Promise<void> => {
-    // TODO: Get companyId from authenticated request
-    const companyId = req.headers['x-company-id'] as string || 'test-company-id';
+    // TODO(!!!): Get companyId from authenticated request when User/Auth module is implemented
+    const companyId = req.headers['x-company-id'] as string || '61aebdca-4e43-475e-97f7-38567973efad';
     const divisionId = req.query.divisionId as string | undefined;
 
     try {

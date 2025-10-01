@@ -206,7 +206,7 @@ export class PropertyDTOMapper {
     return properties.map(property => this.toResponse(property));
   }
 
-  static toCreateInput(dto: CreatePropertyDTO, userId: string, companyId: string): Prisma.PropertyCreateInput {
+  static toCreateInput(dto: CreatePropertyDTO, userId: string, companyId: string): Prisma.PropertyUncheckedCreateInput {
     return {
       name: dto.name ?? null,
       propertyType: dto.propertyType,
@@ -228,31 +228,21 @@ export class PropertyDTOMapper {
       tags: dto.tags ?? [],
       customFields: dto.customFields ?? {},
       isActive: true,
-      company: {
-        connect: { id: companyId }
-      },
-      primaryContact: {
-        connect: { id: dto.primaryContactId }
-      },
-      creator: {
-        connect: { id: userId }
-      },
-      updater: {
-        connect: { id: userId }
-      },
-      ...(dto.divisionId && {
-        division: {
-          connect: { id: dto.divisionId }
-        }
-      }),
+      // Direct field assignment instead of connect
+      companyId,
+      primaryContactId: dto.primaryContactId,
+      // TODO(!!!): Use actual authenticated user IDs when User/Auth module is implemented
+      createdBy: userId,
+      updatedBy: userId,
+      // Optional division
+      ...(dto.divisionId && { divisionId: dto.divisionId }),
     };
   }
 
-  static toUpdateInput(dto: UpdatePropertyDTO, userId: string): Prisma.PropertyUpdateInput {
-    const updateData: Prisma.PropertyUpdateInput = {
-      updater: {
-        connect: { id: userId }
-      },
+  static toUpdateInput(dto: UpdatePropertyDTO, userId: string): Prisma.PropertyUncheckedUpdateInput {
+    const updateData: Prisma.PropertyUncheckedUpdateInput = {
+      // TODO(!!!): Use actual authenticated user ID when User/Auth module is implemented
+      updatedBy: userId,
       updatedAt: new Date(),
     };
 
@@ -275,23 +265,13 @@ export class PropertyDTOMapper {
     if (dto.tags !== undefined) updateData.tags = dto.tags;
     if (dto.customFields !== undefined) updateData.customFields = dto.customFields;
 
-    // Handle relations separately
+    // Handle relations separately - direct field assignment
     if (dto.primaryContactId !== undefined) {
-      updateData.primaryContact = {
-        connect: { id: dto.primaryContactId }
-      };
+      updateData.primaryContactId = dto.primaryContactId;
     }
 
     if (dto.divisionId !== undefined) {
-      if (dto.divisionId === null) {
-        updateData.division = {
-          disconnect: true
-        };
-      } else {
-        updateData.division = {
-          connect: { id: dto.divisionId }
-        };
-      }
+      updateData.divisionId = dto.divisionId;
     }
 
     return updateData;
