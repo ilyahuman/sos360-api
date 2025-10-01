@@ -1,0 +1,38 @@
+# Simple production Dockerfile
+# Build locally first with: pnpm build
+# Then build this image
+
+FROM node:18-alpine
+
+# Install system dependencies
+RUN apk add --no-cache openssl libc6-compat
+
+# Set working directory
+WORKDIR /app
+
+# Set NODE_ENV
+ENV NODE_ENV=production
+
+# Copy package files and Prisma schema
+COPY package.json ./
+COPY prisma ./prisma
+
+# Install production dependencies and tsconfig-paths for runtime path resolution
+RUN npm install --only=production --legacy-peer-deps && \
+    npm install tsconfig-paths --legacy-peer-deps
+
+# Copy TypeScript config (needed for tsconfig-paths at runtime)
+COPY tsconfig.json ./
+
+# Copy pre-built application
+COPY dist ./dist
+
+# Expose port
+EXPOSE 3002
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3002/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+
+# Start application (with path resolution for TypeScript aliases)
+CMD ["node", "-r", "tsconfig-paths/register", "dist/app.js"]

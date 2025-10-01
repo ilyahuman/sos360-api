@@ -1,0 +1,1144 @@
+// Prisma Schema for SOS360 CRM Platform
+// Enterprise multi-tenant PostgreSQL database design
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum CompanyBusinessType {
+  CONTRACTOR
+  SUBCONTRACTOR
+}
+
+enum SubscriptionPlanType {
+  BASIC
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum SubscriptionStatusType {
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+  TRIAL
+}
+
+enum BillingCycleType {
+  MONTHLY
+  ANNUAL
+}
+
+enum UserRoleType {
+  SUPER_ADMIN
+  EXECUTIVE
+  MANAGER
+  ESTIMATOR
+  FOREMAN
+  BASIC_FIELD
+}
+
+enum ContactTypeEnum {
+  COMMERCIAL
+  RESIDENTIAL
+  HOA
+  MUNICIPAL
+  INDUSTRIAL
+}
+
+enum LeadSourceEnum {
+  WEBSITE
+  REFERRAL
+  REPEAT
+  PHONE_CALL
+  TRADE_SHOW
+  SOCIAL_MEDIA
+  ADVERTISING
+  OTHER
+}
+
+enum LeadStatusEnum {
+  LEAD
+  PROSPECT
+  QUALIFIED
+  CUSTOMER
+  INACTIVE
+}
+
+enum ContactMethodEnum {
+  PHONE
+  EMAIL
+  TEXT
+  MAIL
+}
+
+enum PropertyTypeEnum {
+  COMMERCIAL
+  RESIDENTIAL
+  INDUSTRIAL
+  HOA
+  MUNICIPAL
+  MIXED_USE
+}
+
+enum UnitOfMeasureEnum {
+  SF      // Square Feet
+  SY      // Square Yards
+  LF      // Linear Feet
+  TONS    // Tons (weight)
+  GALLONS // Gallons (liquid)
+  EACH    // Each (count)
+  CY      // Cubic Yards
+  LBS     // Pounds
+  HOURS   // Hours (labor/equipment)
+  LOADS   // Truck loads
+  BLOCKS  // Material blocks
+}
+
+enum StageTypeEnum {
+  LEAD
+  PROSPECT
+  OPPORTUNITY
+  WON
+  LOST
+}
+
+enum OpportunityStatusEnum {
+  ACTIVE
+  WON
+  LOST
+  ARCHIVED
+  ON_HOLD
+  TABLED
+}
+
+enum CompetitorSituationEnum {
+  SOLE_SOURCE
+  PREFERRED
+  COMPETITIVE
+  LONG_SHOT
+  UNKNOWN
+}
+
+enum EstimateConfidenceEnum {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum LossReasonEnum {
+  PRICE_TOO_HIGH
+  TIMELINE_MISMATCH
+  SCOPE_CHANGE
+  COMPETITOR_SELECTED
+  PROJECT_CANCELLED
+  BUDGET_UNAVAILABLE
+  RELATIONSHIP_ISSUES
+  OTHER
+}
+
+enum ProjectStatusEnum {
+  SCHEDULED
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CLOSED
+  CANCELLED
+}
+
+enum LineItemStatusEnum {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  ON_HOLD
+  CANCELLED
+}
+
+enum CostCategoryTypeEnum {
+  LABOR
+  MATERIALS
+  EQUIPMENT
+  SUBCONTRACTORS
+  TRUCKING
+  OVERHEAD
+}
+
+enum CostCalculationMethodEnum {
+  PER_UNIT
+  PER_HOUR
+  LUMP_SUM
+  PERCENTAGE
+  PER_LOAD
+}
+
+enum CostStatusEnum {
+  ESTIMATED
+  QUOTED
+  COMMITTED
+  ACTUAL
+  INVOICED
+}
+
+// Division System Enums
+enum DivisionTypeEnum {
+  GEOGRAPHIC        // State, region, city-based
+  SERVICE_LINE      // Paving, sealcoating, maintenance
+  MARKET_SEGMENT    // Commercial, residential, municipal
+  BUSINESS_UNIT     // Subsidiary companies
+  OPERATIONAL       // Field ops, sales, admin
+}
+
+// Lead Type Classification System (Lucidspark Integration)
+enum LeadTypeClassificationEnum {
+  COMMERCIAL_PROPERTY_OWNER
+  HOA_RESIDENTIAL_COMMUNITIES
+  MUNICIPAL_GOVERNMENT_CONTRACTS
+  GENERAL_CONTRACTORS_BUILDERS
+  FACILITY_MANAGERS_MAINTENANCE
+  REPEAT_CLIENTS_REFERRALS
+  INBOUND_DIGITAL_LEADS
+}
+
+enum LeadNoteStyleEnum {
+  BOLD_HEADER_BULLETS
+  ITALICIZED_SOFT
+  COMPLIANCE_CHECKLIST
+  BID_REQUIRED_TAG
+  SCHEDULING_EMPHASIS
+  QUICK_ID_ICON
+  QUALIFICATION_TAG
+}
+
+// Base Models
+model Company {
+  id          String  @id @default(uuid())
+  
+  // Business Information
+  businessName String
+  businessType CompanyBusinessType @default(CONTRACTOR)
+  taxId       String? // Encrypted in application layer
+  
+  // Contact Information
+  phone   String?
+  email   String?
+  website String?
+  address Json?   // {"street": "123 Main St", "city": "Dallas", "state": "TX", "zip": "75201", "country": "US"}
+  
+  // Subscription Management (Stripe Integration)
+  stripeCustomerId   String?
+  subscriptionPlan   SubscriptionPlanType   @default(BASIC)
+  subscriptionStatus SubscriptionStatusType @default(ACTIVE)
+  billingCycle       BillingCycleType       @default(MONTHLY)
+  mrr                Decimal                @default(0.00) @db.Decimal(10,2)
+  
+  // System Configuration
+  settings Json    @default("{}")
+  // Enhanced schema with globalSystemRules for Lucidspark integration
+  timezone String  @default("America/New_York")
+  currency String  @default("USD") @db.VarChar(3)
+  
+  // Status Management
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+  
+  // Audit Trail
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
+  // Relationships
+  divisions        Division[]
+  users            User[]
+  contacts         Contact[]
+  properties       Property[]
+  workingCategories WorkingCategory[]
+  pipelineStages   PipelineStage[]
+  opportunities    Opportunity[]
+  projects         Project[]
+  lineItems        LineItem[]
+  costCategories   CostCategory[]
+  webFormSubmissions WebFormSubmission[]
+
+  @@map("companies")
+}
+
+model Division {
+  id        String @id @default(uuid())
+  companyId String
+
+  // Division Information
+  name         String         @db.VarChar(150) // e.g., "Texas Operations", "Northeast Division", "Commercial Unit"
+  description  String?
+  divisionType DivisionTypeEnum @default(GEOGRAPHIC)
+
+  // Contact Information
+  phone   String?
+  email   String?
+  address Json?
+
+  // Management
+  divisionManagerId String?
+  parentDivisionId  String?
+
+  // Business Configuration
+  settings Json @default("{}")
+
+  // Statistics & Performance
+  targetRevenue          Decimal? @db.Decimal(15,2) // Annual revenue target
+  targetMarginPercentage Decimal? @db.Decimal(5,2)  // Target profit margin
+  employeeCount          Int      @default(0)
+  activeProjectsCount    Int      @default(0)
+
+  // Display & Organization
+  colorCode String  @default("#007bff") @db.VarChar(7)
+  icon      String? @db.VarChar(50)
+  sortOrder Int     @default(0)
+
+  // Status
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  // Audit Trail
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
+  // Relationships
+  company        Company   @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  divisionManager User?    @relation("DivisionManager", fields: [divisionManagerId], references: [id])
+  parentDivision Division? @relation("DivisionHierarchy", fields: [parentDivisionId], references: [id])
+  childDivisions Division[] @relation("DivisionHierarchy")
+
+  // Business relationships
+  users         User[]
+  contacts      Contact[]
+  properties    Property[]
+  opportunities Opportunity[]
+  projects      Project[]
+
+  @@unique([companyId, name])
+  @@index([companyId, isActive])
+  @@index([parentDivisionId])
+  @@index([companyId, divisionType])
+  @@index([divisionManagerId])
+  @@index([companyId, sortOrder])
+  @@map("divisions")
+}
+
+model WebFormSubmission {
+  id        String @id @default(uuid())
+  companyId String
+
+  // Section 1: Contact Information
+  fullName               String             @db.VarChar(200)
+  companyName            String?            @db.VarChar(255)
+  phoneNumber            String             @db.VarChar(20)
+  emailAddress           String             @db.VarChar(255)
+  preferredContactMethod ContactMethodEnum @default(EMAIL)
+
+  // Section 2: Project Details
+  serviceTypesNeeded     Json               // Multi-select array
+  serviceOtherDescription String?
+  propertyType           PropertyTypeEnum
+  projectLocation        Json               // Address or zip code
+  estimatedProjectSize   String?            @db.VarChar(100)
+  timelineForProject     String             @db.VarChar(50) // "ASAP", "within_1_month", "1_3_months", "flexible"
+
+  // Section 3: Additional Information
+  uploadedFiles         Json    @default("[]")
+  notesSpecialRequests  String?
+
+  // Processing Status
+  processingStatus     String    @default("pending") @db.VarChar(50) // "pending", "processed", "converted_to_contact", "spam"
+  processedAt          DateTime?
+  convertedContactId   String?
+  assignedUserId       String?
+
+  // Lead Qualification
+  leadScore           Int?    // 1-100 based on form completion and criteria
+  qualificationNotes  String?
+  followUpRequired    Boolean @default(true)
+
+  // Metadata
+  ipAddress   String? // Inet type as string
+  userAgent   String?
+  referrerUrl String?
+  utmSource   String? @db.VarChar(100)
+  utmMedium   String? @db.VarChar(100)
+  utmCampaign String? @db.VarChar(100)
+
+  // Status
+  deletedAt DateTime?
+
+  // Audit Trail
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  processedBy String?
+
+  // Relationships
+  company         Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  convertedContact Contact? @relation("WebFormContact", fields: [convertedContactId], references: [id])
+  assignedUser    User?    @relation("WebFormAssignee", fields: [assignedUserId], references: [id])
+  processor       User?    @relation("WebFormProcessor", fields: [processedBy], references: [id])
+
+  @@index([companyId, processingStatus])
+  @@index([timelineForProject])
+  @@index([leadScore])
+  @@index([createdAt])
+  @@map("web_form_submissions")
+}
+
+model User {
+  id        String @id @default(uuid())
+  companyId String
+  divisionId String?
+
+  // Personal Information
+  firstName String @db.VarChar(100)
+  lastName  String @db.VarChar(100)
+  email     String @db.VarChar(255)
+  phone     String? @db.VarChar(20)
+
+  // Authentication
+  passwordHash            String    @db.VarChar(255)
+  emailVerified           Boolean   @default(false)
+  emailVerifiedAt         DateTime?
+  passwordResetToken      String?   @db.VarChar(255)
+  passwordResetExpiresAt  DateTime?
+
+  // Session Management
+  lastLogin             DateTime?
+  loginCount            Int       @default(0)
+  failedLoginAttempts   Int       @default(0)
+  lockedUntil           DateTime?
+
+  // Authorization
+  role        UserRoleType @default(BASIC_FIELD)
+  permissions Json         @default("[]")
+
+  // Status
+  isActive       Boolean   @default(true)
+  lastActivityAt DateTime?
+  deletedAt      DateTime?
+
+  // Audit Trail
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
+  // Relationships
+  company  Company  @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  division Division? @relation(fields: [divisionId], references: [id], onDelete: SetNull)
+
+  // Division management relationships
+  managedDivisions Division[] @relation("DivisionManager")
+
+  // Audit relationships
+  createdContacts       Contact[]       @relation("ContactCreator")
+  updatedContacts       Contact[]       @relation("ContactUpdater")
+  createdProperties     Property[]      @relation("PropertyCreator")
+  updatedProperties     Property[]      @relation("PropertyUpdater")
+  createdOpportunities  Opportunity[]   @relation("OpportunityCreator")
+  updatedOpportunities  Opportunity[]   @relation("OpportunityUpdater")
+  createdProjects       Project[]       @relation("ProjectCreator")
+  updatedProjects       Project[]       @relation("ProjectUpdater")
+  assignedOpportunities Opportunity[]   @relation("OpportunityAssignee")
+
+  // Web form relationships
+  assignedWebForms  WebFormSubmission[] @relation("WebFormAssignee")
+  processedWebForms WebFormSubmission[] @relation("WebFormProcessor")
+
+  @@unique([companyId, email])
+  @@index([companyId, role])
+  @@index([companyId, isActive])
+  @@index([lastActivityAt])
+  @@index([divisionId])
+  @@index([companyId, divisionId])
+  @@map("users")
+}
+
+model Contact {
+  id        String @id @default(uuid())
+  companyId String
+  divisionId String?
+
+  // Personal Information
+  firstName   String  @db.VarChar(100)
+  lastName    String  @db.VarChar(100)
+  email       String? @db.VarChar(255)
+  phone       String? @db.VarChar(20)
+  jobTitle    String? @db.VarChar(150)
+  companyName String? @db.VarChar(255)
+
+  // Classification
+  contactType ContactTypeEnum @default(COMMERCIAL)
+  leadSource  LeadSourceEnum  @default(OTHER)
+  leadStatus  LeadStatusEnum  @default(LEAD)
+
+  // Lead Type Classification System (Lucidspark Integration)
+  leadTypeClassification LeadTypeClassificationEnum?
+  leadColorCode          String?                    @db.VarChar(7) // Visual identification
+  leadNoteStyle          LeadNoteStyleEnum?
+  qualificationRequired  Boolean                    @default(false)
+
+  // Web Form Integration Data
+  webFormSourceId       String? // Link to web form submission
+  servicePreferences    Json    @default("[]") // Multi-select array
+  timelinePreference    String? @db.VarChar(50)    // "ASAP", "within_1_month", etc.
+  estimatedProjectSize  String? @db.VarChar(100)
+  propertyTypePreference String? @db.VarChar(50)
+
+  // Relationship Management
+  assignedUserId String?
+  relationshipStage String? @db.VarChar(100)
+
+  // Communication Tracking
+  lastContactDate    DateTime?
+  nextFollowUpDate   DateTime?
+  followUpCount      Int @default(0)
+
+  // Preferences
+  preferredContactMethod     ContactMethodEnum @default(EMAIL)
+  communicationPreferences   Json              @default("{}")
+
+  // Additional Information
+  notes        String?
+  tags         Json    @default("[]")
+  customFields Json    @default("{}")
+  address      Json?
+
+  // Status
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  // Audit Trail
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
+
+  // Relationships
+  company   Company   @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  division  Division? @relation(fields: [divisionId], references: [id], onDelete: SetNull)
+  creator   User      @relation("ContactCreator", fields: [createdBy], references: [id])
+  updater   User      @relation("ContactUpdater", fields: [updatedBy], references: [id])
+
+  // Business relationships
+  properties         Property[]
+  opportunities      Opportunity[]
+  webFormSubmissions WebFormSubmission[] @relation("WebFormContact")
+
+  @@index([companyId, firstName, lastName])
+  @@index([companyId, email])
+  @@index([companyId, contactType, leadStatus])
+  @@index([assignedUserId])
+  @@index([nextFollowUpDate])
+  @@index([divisionId])
+  @@index([companyId, divisionId])
+  @@index([leadTypeClassification])
+  @@index([webFormSourceId])
+  @@index([qualificationRequired])
+  @@map("contacts")
+}
+
+model Property {
+  id                   String  @id @default(uuid())
+  companyId            String
+  divisionId           String?
+  primaryContactId     String
+
+  // Property Information
+  name         String?              @db.VarChar(255)
+  propertyType PropertyTypeEnum     @default(COMMERCIAL)
+
+  // Location
+  address     Json                  // {"street": "123 Main St", "city": "Dallas", "state": "TX", "zip": "75201", "country": "US"}
+  coordinates String?               // PostGIS point for lat/lng
+
+  // Property Details
+  totalArea           Decimal?      @db.Decimal(12,2)
+  surfaceTypes        Json          @default("[]") // ["asphalt", "concrete", "gravel"]
+  parkingSpacesCount  Int?
+
+  // Access & Requirements
+  accessRestrictions   String?
+  specialRequirements  String?
+
+  // Documentation
+  photos               Json          @default("[]") // [{"id": "uuid", "url": "https://...", "caption": "...", "uploadedAt": "..."}]
+  sitePlans            Json          @default("[]")
+  previousWorkHistory  Json          @default("[]")
+
+  // Integration
+  spotonSiteProjectId    String?  @db.VarChar(100)
+  googlePlacesId         String?  @db.VarChar(255)
+
+  // Lucidspark Integration
+  autoSpotonSiteCreation    Boolean @default(false) // Auto-create SpotOnSite project for maintenance work
+  mappingMethodPreference   String? @db.VarChar(50)  // "spotonsite" or "takeoff_program"
+  takeoffProgramPreference  String? @db.VarChar(50)  // "planswift" or "bluebeam"
+
+  // Metadata
+  notes        String?
+  tags         Json    @default("[]")
+  customFields Json    @default("{}")
+
+  // Status
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  // Audit Trail
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
+
+  // Relationships
+  company        Company   @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  division       Division? @relation(fields: [divisionId], references: [id], onDelete: SetNull)
+  primaryContact Contact   @relation(fields: [primaryContactId], references: [id], onDelete: Restrict)
+  creator        User      @relation("PropertyCreator", fields: [createdBy], references: [id])
+  updater        User      @relation("PropertyUpdater", fields: [updatedBy], references: [id])
+
+  // Business relationships
+  opportunities Opportunity[]
+
+  @@index([companyId, name])
+  @@index([primaryContactId])
+  @@index([companyId, propertyType])
+  @@index([divisionId])
+  @@index([companyId, divisionId])
+  @@map("properties")
+}
+
+model WorkingCategory {
+  id          String @id @default(uuid())
+  companyId   String
+
+  // Category Definition
+  name              String  @db.VarChar(150)
+  description       String?
+  parentCategoryId  String?
+
+  // Measurement Configuration
+  primaryUnit           UnitOfMeasureEnum @default(SF)
+  secondaryUnits        Json              @default("[]")
+  unitConversionFactors Json              @default("{}")
+
+  // Business Configuration
+  requiresMapping       Boolean @default(false)
+  typicalCrewSize       Int?
+  productionRateRange   Json?   // {"min": 8000, "max": 15000, "unit": "sf_per_day"}
+  seasonalRestrictions  Json    @default("{}")
+
+  // Cost Configuration
+  defaultMarkupPercentage Decimal @default(0.00) @db.Decimal(5,2)
+  costFactors             Json    @default("{}")
+
+  // Display Configuration
+  colorCode String  @default("#666666") @db.VarChar(7)
+  icon      String? @db.VarChar(50)
+  sortOrder Int     @default(0)
+
+  // Status
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  // Audit Trail
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
+
+  // Relationships
+  company          Company          @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  parentCategory   WorkingCategory? @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id])
+  subcategories    WorkingCategory[] @relation("CategoryHierarchy")
+
+  // Business relationships
+  lineItems LineItem[]
+
+  @@unique([companyId, name, parentCategoryId])
+  @@index([companyId, name])
+  @@index([parentCategoryId])
+  @@index([companyId, primaryUnit])
+  @@map("working_categories")
+}
+
+model PipelineStage {
+  id        String @id @default(uuid())
+  companyId String
+
+  // Stage Definition
+  name        String          @db.VarChar(100)
+  description String?
+  stageType   StageTypeEnum   @default(PROSPECT)
+
+  // Business Logic
+  probabilityPercentage Int     @default(0)
+  isFinalStage          Boolean @default(false)
+
+  // Requirements
+  requiresMapping   Boolean @default(false)
+  requiresEstimate  Boolean @default(false)
+  requiresApproval  Boolean @default(false)
+  minimumValue      Decimal? @db.Decimal(12,2)
+
+  // Automation
+  autoFollowUpDays Int?
+  entryActions     Json @default("[]")
+  exitActions      Json @default("[]")
+
+  // Workflow
+  sortOrder              Int  @default(0)
+  allowedPreviousStages  Json @default("[]")
+  allowedNextStages      Json @default("[]")
+
+  // Display
+  colorCode String  @default("#007bff") @db.VarChar(7)
+  icon      String? @db.VarChar(50)
+
+  // Status
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  // Audit Trail
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
+
+  // Relationships
+  company Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
+
+  // Business relationships
+  opportunities Opportunity[]
+
+  @@unique([companyId, name])
+  @@unique([companyId, sortOrder])
+  @@index([companyId, sortOrder])
+  @@index([companyId, stageType])
+  @@map("pipeline_stages")
+}
+
+model Opportunity {
+  id         String @id @default(uuid())
+  companyId  String
+  divisionId String?
+  contactId  String
+  propertyId String
+
+  // Opportunity Details
+  name                String  @db.VarChar(255)
+  description         String?
+  opportunityNumber   String? @db.VarChar(50) // Auto-generated: OPP-YYYY-######
+
+  // Financial
+  estimatedValue         Decimal? @db.Decimal(12,2)
+  actualValue           Decimal? @db.Decimal(12,2)
+  probabilityPercentage Int      @default(0)
+
+  // Timeline
+  expectedCloseDate DateTime?
+  projectStartDate  DateTime?
+  projectEndDate    DateTime?
+  timelineNotes     String?
+
+  // Pipeline Management
+  currentStageId    String
+  stageUpdatedAt    DateTime @default(now())
+  stageHistory      Json     @default("[]")
+  assignedUserId    String?
+
+  // Competition & Context
+  competitorCount       Int                        @default(0)
+  competitionNotes      String?
+  competitiveSituation  CompetitorSituationEnum    @default(UNKNOWN)
+
+  // Mapping & Estimation
+  requiresMapping       Boolean                    @default(false)
+  spotonSiteProjectId   String?                    @db.VarChar(100)
+  mappingCompletedAt    DateTime?
+  mappingData           Json                       @default("{}")
+  estimateCompletedAt   DateTime?
+  estimateConfidence    EstimateConfidenceEnum     @default(MEDIUM)
+
+  // Lucidspark Integration Fields
+  projectType             String?  @db.VarChar(50)  // "maintenance" or "plan_work"
+  mappingMethod           String?  @db.VarChar(50)  // "spotonsite" or "takeoff_program"
+  takeoffProgram          String?  @db.VarChar(50)  // "planswift" or "bluebeam"
+  sos360JobNumber         String?  @db.VarChar(50)  // Auto-populated from 360 system
+  pipelineSyncStatus      String   @default("pending") @db.VarChar(50) // "pending", "synced", "error"
+  kanbanViewAccessible    Boolean  @default(true)   // CRM module navigation
+  lineItemsMatched        Boolean  @default(false)  // Line items match project summary in SOS
+  autoSpotonSiteCreated   Boolean  @default(false)  // Auto-creation status for maintenance work
+
+  // Proposal Management
+  proposalGeneratedAt DateTime?
+  proposalSentAt      DateTime?
+  proposalOpenedAt    DateTime?
+  proposalViewCount   Int      @default(0)
+  proposalExpiresAt   DateTime?
+  proposalVersion     Int      @default(1)
+
+  // Follow-up Tracking
+  lastFollowUpDate DateTime?
+  nextFollowUpDate DateTime?
+  followUpCount    Int       @default(0)
+
+  // Closure
+  status       OpportunityStatusEnum @default(ACTIVE)
+  wonAt        DateTime?
+  lostAt       DateTime?
+  lossReason   LossReasonEnum?
+  closureNotes String?
+
+  // Metadata
+  tags         Json    @default("[]")
+  customFields Json    @default("{}")
+  notes        String?
+
+  // Status
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  // Audit Trail
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
+
+  // Relationships
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  division     Division?     @relation(fields: [divisionId], references: [id], onDelete: SetNull)
+  contact      Contact       @relation(fields: [contactId], references: [id], onDelete: Restrict)
+  property     Property      @relation(fields: [propertyId], references: [id], onDelete: Restrict)
+  currentStage PipelineStage @relation(fields: [currentStageId], references: [id])
+  assignedUser User?         @relation("OpportunityAssignee", fields: [assignedUserId], references: [id])
+  creator      User          @relation("OpportunityCreator", fields: [createdBy], references: [id])
+  updater      User          @relation("OpportunityUpdater", fields: [updatedBy], references: [id])
+
+  // Business relationships
+  project   Project?
+  lineItems LineItem[]
+
+  @@index([companyId, status])
+  @@index([currentStageId])
+  @@index([assignedUserId])
+  @@index([expectedCloseDate])
+  @@index([companyId, estimatedValue])
+  @@index([divisionId])
+  @@index([companyId, divisionId])
+  @@index([projectType])
+  @@index([pipelineSyncStatus])
+  @@index([sos360JobNumber])
+  @@map("opportunities")
+}
+
+model Project {
+  id            String @id @default(uuid())
+  companyId     String
+  divisionId    String?
+  opportunityId String @unique
+  contactId     String
+  propertyId    String
+
+  // Project Identification
+  jobNumber          String @db.VarChar(50)
+  projectName        String @db.VarChar(255)
+  projectDescription String?
+
+  // Contract Information
+  contractValue      Decimal  @db.Decimal(12,2)
+  contractSignedDate DateTime?
+  contractTerms      Json     @default("{}")
+
+  // Financial Tracking
+  estimatedTotalCost Decimal? @db.Decimal(12,2)
+  actualTotalCost    Decimal  @default(0.00) @db.Decimal(12,2)
+  committedCosts     Decimal  @default(0.00) @db.Decimal(12,2)
+
+  // Scheduling
+  scheduledStartDate DateTime?
+  scheduledEndDate   DateTime?
+  actualStartDate    DateTime?
+  actualEndDate      DateTime?
+  weatherDelaysDays  Int       @default(0)
+
+  // Team Assignment
+  projectManagerId String?
+  foremanId        String?
+  crewAssignments  Json    @default("[]")
+
+  // Status Management
+  projectStatus        ProjectStatusEnum @default(SCHEDULED)
+  completionPercentage Int               @default(0)
+  statusNotes          String?
+
+  // Quality & Safety
+  safetyIncidents          Json    @default("[]")
+  qualityIssues            Json    @default("[]")
+  customerSatisfactionScore Int?   // 1-5 scale
+  customerFeedback         String?
+
+  // Documentation
+  workOrders        Json @default("[]")
+  progressPhotos    Json @default("[]")
+  completionPhotos  Json @default("[]")
+  customerSignatures Json @default("[]")
+  invoices          Json @default("[]")
+
+  // Change Orders
+  changeOrdersCount Int     @default(0)
+  changeOrdersValue Decimal @default(0.00) @db.Decimal(12,2)
+
+  // Integration
+  spotonSiteProjectId String? @db.VarChar(100)
+
+  // Metadata
+  notes        String?
+  tags         Json    @default("[]")
+  customFields Json    @default("{}")
+
+  // Status
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  // Audit Trail
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
+
+  // Relationships
+  company     Company     @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  division    Division?   @relation(fields: [divisionId], references: [id], onDelete: SetNull)
+  opportunity Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Restrict)
+  creator     User        @relation("ProjectCreator", fields: [createdBy], references: [id])
+  updater     User        @relation("ProjectUpdater", fields: [updatedBy], references: [id])
+
+  // Business relationships
+  lineItems LineItem[]
+
+  @@unique([companyId, jobNumber])
+  @@index([companyId, projectStatus])
+  @@index([companyId, jobNumber])
+  @@index([opportunityId])
+  @@index([scheduledStartDate, scheduledEndDate])
+  @@index([companyId, contractValue])
+  @@index([divisionId])
+  @@index([companyId, divisionId])
+  @@map("projects")
+}
+
+model LineItem {
+  id                   String @id @default(uuid())
+  companyId            String
+  projectId            String?
+  opportunityId        String?
+  workingCategoryId    String
+
+  // Item Definition
+  description    String  @db.VarChar(500)
+  workAreaName   String? @db.VarChar(200) // "Main Parking Lot", "Fire Lanes"
+  itemNumber     String? @db.VarChar(50)
+
+  // Quantities
+  estimatedQuantity Decimal?              @db.Decimal(12,4)
+  actualQuantity    Decimal?              @db.Decimal(12,4)
+  unitOfMeasure     UnitOfMeasureEnum
+
+  // Pricing
+  unitPrice Decimal? @db.Decimal(10,4)
+  actualTotal Decimal? @db.Decimal(12,2)
+
+  // Scheduling
+  scheduledStartDate DateTime?
+  scheduledEndDate   DateTime?
+  actualStartDate    DateTime?
+  actualEndDate      DateTime?
+  sortOrder          Int       @default(0)
+
+  // Status
+  status               LineItemStatusEnum @default(PENDING)
+  completionPercentage Int                @default(0)
+
+  // Integration
+  spotonSiteMeasurementId String? @db.VarChar(100)
+  spotonSiteAreaData      Json    @default("{}")
+
+  // Visual Correlation System (Lucidspark Integration)
+  mapAreaCoordinates     Json    @default("{}") // Specific repair area coordinates
+  visualCorrelationId    String? @db.VarChar(100) // Link between line item and map area
+  categoryFilterData     Json    @default("{}") // For layered filtering capability
+  customerPortalVisible  Boolean @default(true)   // Visible in customer portal
+  costReflectionEnabled  Boolean @default(true)   // Cost reflects in filter
+
+  // Change Management
+  originalQuantity   Decimal? @db.Decimal(12,4)
+  originalUnitPrice  Decimal? @db.Decimal(10,4)
+  changeOrderReference String? @db.VarChar(100)
+
+  // Metadata
+  notes        String?
+  customFields Json    @default("{}")
+
+  // Status
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  // Audit Trail
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
+
+  // Relationships
+  company         Company          @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  workingCategory WorkingCategory  @relation(fields: [workingCategoryId], references: [id], onDelete: Restrict)
+  opportunity     Opportunity?     @relation(fields: [opportunityId], references: [id])
+  project         Project?         @relation(fields: [projectId], references: [id])
+
+  // Business relationships
+  lineItemCosts LineItemCost[]
+
+  @@index([projectId, sortOrder])
+  @@index([opportunityId, sortOrder])
+  @@index([workingCategoryId])
+  @@index([companyId, status])
+  @@map("line_items")
+}
+
+model CostCategory {
+  id          String @id @default(uuid())
+  companyId   String
+
+  // Category Definition
+  name              String              @db.VarChar(150)
+  categoryType      CostCategoryTypeEnum
+  description       String?
+  parentCategoryId  String?
+
+  // Cost Configuration
+  defaultUnitCost         Decimal?                      @db.Decimal(10,4)
+  costCalculationMethod   CostCalculationMethodEnum     @default(PER_UNIT)
+
+  // Labor-specific fields
+  burdenRate          Decimal? @db.Decimal(5,4) // e.g., 2.6 for $25/hr → $65/hr
+  hourlyBaseRate      Decimal? @db.Decimal(8,2)
+  overtimeMultiplier  Decimal? @default(1.5) @db.Decimal(3,2)
+
+  // Material-specific fields
+  vendorInformation Json    @default("{}")
+  markupPercentage  Decimal @default(0.00) @db.Decimal(5,2)
+  wasteFactor       Decimal @default(0.00) @db.Decimal(5,4)
+
+  // Equipment-specific fields
+  dailyRate        Decimal? @db.Decimal(10,2)
+  hourlyRate       Decimal? @db.Decimal(10,2)
+  fuelCostPerHour  Decimal? @db.Decimal(8,2)
+  operatorRequired Boolean  @default(false)
+
+  // Geographic & Seasonal Factors
+  locationFactors      Json @default("{}")
+  seasonalAdjustments  Json @default("{}")
+
+  // Business Rules
+  minimumCharge   Decimal? @db.Decimal(10,2)
+  minimumQuantity Decimal? @db.Decimal(12,4)
+  leadTimeDays    Int      @default(0)
+
+  // Display
+  colorCode String @default("#666666") @db.VarChar(7)
+  sortOrder Int    @default(0)
+
+  // Status
+  isActive       Boolean   @default(true)
+  effectiveDate  DateTime  @default(now()) @db.Date
+  expirationDate DateTime? @db.Date
+  deletedAt      DateTime?
+
+  // Audit Trail
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
+
+  // Relationships
+  company        Company        @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  parentCategory CostCategory?  @relation("CostCategoryHierarchy", fields: [parentCategoryId], references: [id])
+  subcategories  CostCategory[] @relation("CostCategoryHierarchy")
+
+  // Business relationships
+  lineItemCosts LineItemCost[]
+
+  @@unique([companyId, name, parentCategoryId])
+  @@index([companyId, categoryType])
+  @@index([companyId, isActive, sortOrder])
+  @@map("cost_categories")
+}
+
+model LineItemCost {
+  id               String @id @default(uuid())
+  lineItemId       String
+  costCategoryId   String
+
+  // Cost Application
+  estimatedQuantity Decimal? @db.Decimal(12,4)
+  actualQuantity    Decimal? @db.Decimal(12,4)
+  unitCost          Decimal  @db.Decimal(10,4)
+  actualTotalCost   Decimal? @db.Decimal(12,2)
+
+  // Applied Factors
+  burdenRateApplied       Decimal @default(1.0000) @db.Decimal(5,4)
+  markupPercentageApplied Decimal @default(0.00) @db.Decimal(5,2)
+  locationFactorApplied   Decimal @default(1.0000) @db.Decimal(5,4)
+  seasonalFactorApplied   Decimal @default(1.0000) @db.Decimal(5,4)
+
+  // Vendor/Resource Information
+  vendorName           String? @db.VarChar(255)
+  vendorQuoteReference String? @db.VarChar(100)
+  purchaseOrderNumber  String? @db.VarChar(100)
+
+  // Labor/Equipment Details
+  laborHours     Decimal? @db.Decimal(8,2)
+  equipmentHours Decimal? @db.Decimal(8,2)
+  crewSize       Int?
+
+  // Trucking Details
+  truckLoads           Int?
+  roundTripTimeMinutes Int?
+  distanceMiles        Decimal? @db.Decimal(6,2)
+
+  // Status
+  costStatus CostStatusEnum @default(ESTIMATED)
+  costDate   DateTime       @default(now()) @db.Date
+
+  // Metadata
+  notes String?
+
+  // Audit Trail
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  updatedBy String
+
+  // Relationships
+  lineItem     LineItem     @relation(fields: [lineItemId], references: [id], onDelete: Cascade)
+  costCategory CostCategory @relation(fields: [costCategoryId], references: [id], onDelete: Restrict)
+
+  @@unique([lineItemId, costCategoryId])
+  @@index([lineItemId])
+  @@index([costCategoryId])
+  @@index([costStatus])
+  @@map("line_item_costs")
+}
+
