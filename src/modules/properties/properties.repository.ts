@@ -264,7 +264,7 @@ export class PropertyRepository {
           deletedAt: new Date(),
           isActive: false,
           // TODO(!!!): Use actual authenticated user ID when User/Auth module is implemented
-          updatedBy: userId,
+          // updatedBy: userId,
           updatedAt: new Date(),
         },
       });
@@ -427,7 +427,7 @@ export class PropertyRepository {
         data: {
           divisionId,
           // TODO(!!!): Use actual authenticated user ID when User/Auth module is implemented
-          updatedBy: userId,
+          // updatedBy: userId,
           updatedAt: new Date(),
         },
         include: {

@@ -598,15 +598,15 @@ model Property {
   // Audit Trail
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  createdBy String
-  updatedBy String
+  createdBy String?
+  updatedBy String?
 
   // Relationships
   company        Company   @relation(fields: [companyId], references: [id], onDelete: Restrict)
   division       Division? @relation(fields: [divisionId], references: [id], onDelete: SetNull)
   primaryContact Contact   @relation(fields: [primaryContactId], references: [id], onDelete: Restrict)
-  creator        User      @relation("PropertyCreator", fields: [createdBy], references: [id])
-  updater        User      @relation("PropertyUpdater", fields: [updatedBy], references: [id])
+  creator        User?     @relation("PropertyCreator", fields: [createdBy], references: [id])
+  updater        User?     @relation("PropertyUpdater", fields: [updatedBy], references: [id])
 
   // Business relationships
   opportunities Opportunity[]
@@ -655,8 +655,8 @@ model WorkingCategory {
   // Audit Trail
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  createdBy String
-  updatedBy String
+  createdBy String?
+  updatedBy String?
 
   // Relationships
   company          Company          @relation(fields: [companyId], references: [id], onDelete: Restrict)
@@ -713,8 +713,8 @@ model PipelineStage {
   // Audit Trail
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  createdBy String
-  updatedBy String
+  createdBy String?
+  updatedBy String?
 
   // Relationships
   company Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
@@ -813,8 +813,8 @@ model Opportunity {
   // Audit Trail
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  createdBy String
-  updatedBy String
+  createdBy String?
+  updatedBy String?
 
   // Relationships
   company      Company       @relation(fields: [companyId], references: [id], onDelete: Restrict)
@@ -823,8 +823,8 @@ model Opportunity {
   property     Property      @relation(fields: [propertyId], references: [id], onDelete: Restrict)
   currentStage PipelineStage @relation(fields: [currentStageId], references: [id])
   assignedUser User?         @relation("OpportunityAssignee", fields: [assignedUserId], references: [id])
-  creator      User          @relation("OpportunityCreator", fields: [createdBy], references: [id])
-  updater      User          @relation("OpportunityUpdater", fields: [updatedBy], references: [id])
+  creator      User?         @relation("OpportunityCreator", fields: [createdBy], references: [id])
+  updater      User?         @relation("OpportunityUpdater", fields: [updatedBy], references: [id])
 
   // Business relationships
   project   Project?
@@ -915,15 +915,15 @@ model Project {
   // Audit Trail
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  createdBy String
-  updatedBy String
+  createdBy String?
+  updatedBy String?
 
   // Relationships
   company     Company     @relation(fields: [companyId], references: [id], onDelete: Restrict)
   division    Division?   @relation(fields: [divisionId], references: [id], onDelete: SetNull)
   opportunity Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Restrict)
-  creator     User        @relation("ProjectCreator", fields: [createdBy], references: [id])
-  updater     User        @relation("ProjectUpdater", fields: [updatedBy], references: [id])
+  creator     User?       @relation("ProjectCreator", fields: [createdBy], references: [id])
+  updater     User?       @relation("ProjectUpdater", fields: [updatedBy], references: [id])
 
   // Business relationships
   lineItems LineItem[]
@@ -998,8 +998,8 @@ model LineItem {
   // Audit Trail
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  createdBy String
-  updatedBy String
+  createdBy String?
+  updatedBy String?
 
   // Relationships
   company         Company          @relation(fields: [companyId], references: [id], onDelete: Restrict)
@@ -1069,8 +1069,8 @@ model CostCategory {
   // Audit Trail
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  createdBy String
-  updatedBy String
+  createdBy String?
+  updatedBy String?
 
   // Relationships
   company        Company        @relation(fields: [companyId], references: [id], onDelete: Restrict)
@@ -1128,8 +1128,8 @@ model LineItemCost {
   // Audit Trail
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  createdBy String
-  updatedBy String
+  createdBy String?
+  updatedBy String?
 
   // Relationships
   lineItem     LineItem     @relation(fields: [lineItemId], references: [id], onDelete: Cascade)
