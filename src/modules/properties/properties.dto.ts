@@ -103,8 +103,8 @@ export interface PropertyResponseDTO {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
-  createdBy: string;
-  updatedBy: string;
+  createdBy: string | null;
+  updatedBy: string | null;
   // Relations (optional)
   primaryContact?: {
     id: string;
@@ -232,8 +232,8 @@ export class PropertyDTOMapper {
       companyId,
       primaryContactId: dto.primaryContactId,
       // TODO(!!!): Use actual authenticated user IDs when User/Auth module is implemented
-      createdBy: userId,
-      updatedBy: userId,
+      // createdBy: userId,
+      // updatedBy: userId,
       // Optional division
       ...(dto.divisionId && { divisionId: dto.divisionId }),
     };
@@ -242,7 +242,7 @@ export class PropertyDTOMapper {
   static toUpdateInput(dto: UpdatePropertyDTO, userId: string): Prisma.PropertyUncheckedUpdateInput {
     const updateData: Prisma.PropertyUncheckedUpdateInput = {
       // TODO(!!!): Use actual authenticated user ID when User/Auth module is implemented
-      updatedBy: userId,
+      // updatedBy: userId,
       updatedAt: new Date(),
     };
 
