@@ -1,13 +1,11 @@
 /**
- * Route Configurator
- * Centralized route configuration and setup
+ * Route Configurator (Refactored)
+ * Centralized, explicit route configuration and setup
  */
 
 import { Application } from 'express';
 import { config, isDevelopment } from '@/config/environment';
 import { logger } from '@/shared/utils/logger';
-import { authMiddleware } from '@/modules/auth/auth.middleware';
-import { tenantIsolation } from '@/api/middleware/tenantIsolation';
 import databaseService from '@/infrastructure/database/prisma.client';
 
 // Import route modules
@@ -71,13 +69,20 @@ export class RouteConfigurator {
     });
   }
 
+  /**
+   * CTO Note: This is the corrected, explicit route mounting strategy.
+   * Each module is assigned a clear, non-conflicting base path.
+   * This file is now the single source of truth for the API's structure.
+   */
   private configureRoutes(): void {
-    // Mount module routes - each module handles its own flows internally
+    // Mount auth routes
     this.app.use(`${this.apiPrefix}/auth`, authRoutes);
-    this.app.use(`${this.apiPrefix}`, companyRoutes); // Companies module handles /companies and /admin/companies internally
-    this.app.use(`${this.apiPrefix}/divisions`, divisionRoutes); // Divisions module handles /divisions and /admin/divisions internally
-    this.app.use(`${this.apiPrefix}`, contactRoutes); // Contacts module handles /contacts and /admin/contacts internally
-    this.app.use(`${this.apiPrefix}`, propertyRoutes); // Properties module handles /properties and /admin/properties internally
+
+    // Mount module routes with explicit base paths
+    this.app.use(`${this.apiPrefix}/companies`, companyRoutes);
+    this.app.use(`${this.apiPrefix}/divisions`, divisionRoutes);
+    this.app.use(`${this.apiPrefix}/contacts`, contactRoutes);
+    this.app.use(`${this.apiPrefix}/properties`, propertyRoutes);
   }
 
   private configureRootEndpoint(): void {
@@ -97,7 +102,6 @@ export class RouteConfigurator {
           divisions: `${this.apiPrefix}/divisions`,
           contacts: `${this.apiPrefix}/contacts`,
           properties: `${this.apiPrefix}/properties`,
-          admin: `${this.apiPrefix}/admin`,
         },
       });
     });
@@ -112,15 +116,6 @@ export class RouteConfigurator {
         path: req.originalUrl,
         method: req.method,
         timestamp: new Date().toISOString(),
-        availableEndpoints: {
-          root: '/',
-          health: config.HEALTH_CHECK_PATH,
-          auth: `${this.apiPrefix}/auth`,
-          companies: `${this.apiPrefix}/companies`,
-          divisions: `${this.apiPrefix}/divisions`,
-          contacts: `${this.apiPrefix}/contacts`,
-          properties: `${this.apiPrefix}/properties`,
-        },
       });
     });
   }

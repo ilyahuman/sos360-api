@@ -1,31 +1,29 @@
-// API Response types for standardized HTTP responses
+/**
+ * Response Type Definitions (Final)
+ * Defines the standardized structure for all API responses.
+ */
+
 export interface ApiError {
   code: string;
   message: string;
   field?: string;
-  details?: Record<string, unknown>;
+  details?: unknown;
 }
 
-export interface ApiResponse {
+export interface ApiResponse<T = unknown> {
   success: boolean;
-  data?: unknown;
-  message?: string;
+  message: string;
+  data?: T;
   errors?: ApiError[];
-  meta?: {
+  meta: {
     timestamp: string;
     path: string;
     method: string;
-    version?: string;
-    statusCode?: number;
-    requestId?: string;
-    [key: string]: any;
+    requestId: string;
   };
 }
 
+// Interface to add optional status code to standard Error object
 export interface ErrorWithStatus extends Error {
-  status?: number;
   statusCode?: number;
-  code?: string;
-  field?: string;
-  details?: Record<string, unknown>;
 }

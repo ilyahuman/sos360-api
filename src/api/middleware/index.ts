@@ -2,5 +2,5 @@
  * Middleware Module Exports
  */
 
-export { MiddlewareConfigurator } from './MiddlewareConfigurator';
-export { ErrorConfigurator } from './ErrorConfigurator';
+export { MiddlewareConfigurator } from './middlewareConfigurator';
+export { ErrorConfigurator } from './errorConfigurator';
