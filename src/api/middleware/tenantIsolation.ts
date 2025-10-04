@@ -51,7 +51,7 @@ function validateTenantAccess(req: Request, userCompanyId: string): void {
   }
 }
 
-function checkNestedCompanyIds(obj: unknown, userCompanyId: string): void {
+function checkNestedCompanyIds(obj: any, userCompanyId: string): void {
   if (typeof obj !== 'object' || obj === null) return;
   if (Array.isArray(obj)) {
     obj.forEach(item => checkNestedCompanyIds(item, userCompanyId));

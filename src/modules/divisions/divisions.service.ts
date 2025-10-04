@@ -160,21 +160,25 @@ export class DivisionService {
       previousDivisionId = await this.getCurrentDivisionAssignment(request.entityType, request.entityId);
 
       // Perform reassignment based on entity type
+      if (!request.newDivisionId) {
+        throw new Error('Division ID is required for reassignment');
+      }
+
       switch (request.entityType) {
         case 'user':
-          success = await this.divisionRepository.reassignUser(request.entityId, request.newDivisionId || null, userId);
+          success = await this.divisionRepository.reassignUser(request.entityId, request.newDivisionId, userId);
           break;
         case 'contact':
-          success = await this.divisionRepository.reassignContact(request.entityId, request.newDivisionId || null, userId);
+          success = await this.divisionRepository.reassignContact(request.entityId, request.newDivisionId, userId);
           break;
         case 'property':
-          success = await this.divisionRepository.reassignProperty(request.entityId, request.newDivisionId || null, userId);
+          success = await this.divisionRepository.reassignProperty(request.entityId, request.newDivisionId, userId);
           break;
         case 'opportunity':
-          success = await this.divisionRepository.reassignOpportunity(request.entityId, request.newDivisionId || null, userId);
+          success = await this.divisionRepository.reassignOpportunity(request.entityId, request.newDivisionId, userId);
           break;
         case 'project':
-          success = await this.divisionRepository.reassignProject(request.entityId, request.newDivisionId || null, userId);
+          success = await this.divisionRepository.reassignProject(request.entityId, request.newDivisionId, userId);
           break;
         default:
           throw new Error(`Unsupported entity type: ${request.entityType}`);

@@ -1,39 +1,23 @@
 /**
- * Company Types
- * Simple types that work with Prisma and DTOs
+ * companies.types.ts
+ *
+ * This file defines the TypeScript types and interfaces for the Companies module.
+ * These types are used for data transfer objects (DTOs) and to ensure type safety
+ * between the different layers of the application (controller, service, repository).
  */
 
 import { Company } from '@prisma/client';
-import {
-  CreateCompanyDTO,
-  UpdateCompanyDTO,
-  CompanyResponseDTO,
-  CompanyStatsDTO
-} from './companies.dto';
 
-// Re-export DTOs for backward compatibility
-export type CreateCompanyRequest = CreateCompanyDTO;
-export type UpdateCompanyRequest = UpdateCompanyDTO;
-export type CompanyResponse = CompanyResponseDTO;
-export type CompanyStats = CompanyStatsDTO;
+// The primary DTO for a Company, omitting sensitive or unnecessary fields.
+export type CompanyDto = Omit<Company, 'deletedAt'>;
 
-// Service response types
-export interface ServiceResponse<T = any> {
-  success: boolean;
-  message: string;
-  data?: T;
-  errors?: any[];
-}
-
-// Validation error type
-export interface ValidationError {
-  field: string;
-  message: string;
-}
-
-// Company with relations (if needed)
-export interface CompanyWithRelations extends Company {
-  users?: any[];
-  divisions?: any[];
-  contacts?: any[];
+// Defines the structure for a paginated response of companies, used in the admin flow.
+export interface PaginatedCompaniesResponse {
+  data: CompanyDto[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }

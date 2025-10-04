@@ -212,6 +212,7 @@ export class PropertyDTOMapper {
       propertyType: dto.propertyType,
       address: dto.address,
       coordinates: dto.coordinates ?? null,
+      divisionId: dto.divisionId || '', // TODO: Get default division ID from company
       totalArea: dto.totalArea ?? null,
       surfaceTypes: dto.surfaceTypes ?? [],
       parkingSpacesCount: dto.parkingSpacesCount ?? null,
@@ -270,7 +271,7 @@ export class PropertyDTOMapper {
       updateData.primaryContactId = dto.primaryContactId;
     }
 
-    if (dto.divisionId !== undefined) {
+    if (dto.divisionId !== undefined && dto.divisionId !== null) {
       updateData.divisionId = dto.divisionId;
     }
 

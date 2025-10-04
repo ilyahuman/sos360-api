@@ -3,7 +3,8 @@
  * Data access layer using Prisma with proper types
  */
 
-import { PrismaClient, Property, Prisma } from '@prisma/client';
+import { Property, Prisma } from '@prisma/client';
+import { ExtendedPrismaClient } from '@/infrastructure/database/prisma.client';
 import {
   CreatePropertyDTO,
   UpdatePropertyDTO,
@@ -14,7 +15,7 @@ import {
 } from './properties.dto';
 
 export class PropertyRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: ExtendedPrismaClient) {}
 
   async create(data: CreatePropertyDTO, userId: string, companyId: string): Promise<Property> {
     const input = PropertyDTOMapper.toCreateInput(data, userId, companyId);

@@ -1,30 +1,20 @@
 /**
- * SOS360 API Application Entry Point
- * Simple initialization script that bootstraps the server
+ * SOS360 API Application Entry Point (Final)
+ * Initializes and starts the server.
  */
 
-import { createServer } from '@/api/core/Server';
+import 'reflect-metadata'; // Must be the first import for dependency injection to work.
+import { Application } from '@/api/core/Application';
 import { logger } from '@/shared/utils/logger';
 
-/**
- * Bootstrap the application
- */
 async function bootstrap(): Promise<void> {
   try {
-    logger.info('Starting SOS360 API application...');
-
-    const server = createServer();
-    await server.start();
+    const app = new Application();
+    await app.start();
   } catch (error) {
-    logger.error('Failed to bootstrap application:', error);
+    logger.error('❌ Fatal error during application bootstrap:', error);
     process.exit(1);
   }
 }
 
-// Start the server if this file is run directly
-if (require.main === module) {
-  bootstrap();
-}
-
-// Export for testing purposes
-export { createServer };
+bootstrap();

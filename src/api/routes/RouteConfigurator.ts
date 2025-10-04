@@ -9,7 +9,6 @@ import { logger } from '@/shared/utils/logger';
 import databaseService from '@/infrastructure/database/prisma.client';
 
 // Import route modules
-import authRoutes from '@/modules/auth/auth.routes';
 import companyRoutes from '@/modules/companies/companies.routes';
 import divisionRoutes from '@/modules/divisions/divisions.routes';
 import contactRoutes from '@/modules/contacts/contacts.routes';
@@ -75,9 +74,6 @@ export class RouteConfigurator {
    * This file is now the single source of truth for the API's structure.
    */
   private configureRoutes(): void {
-    // Mount auth routes
-    this.app.use(`${this.apiPrefix}/auth`, authRoutes);
-
     // Mount module routes with explicit base paths
     this.app.use(`${this.apiPrefix}/companies`, companyRoutes);
     this.app.use(`${this.apiPrefix}/divisions`, divisionRoutes);

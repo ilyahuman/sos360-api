@@ -5,6 +5,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod';
+import { status } from 'http-status';
 import { fromZodError, ValidationError as ZodValidationError } from 'zod-validation-error';
 import { logger } from '@/shared/utils/logger';
 import { config } from '@/config/environment';
@@ -34,7 +35,7 @@ export const errorHandler = (err: Error, req: Request, res: Response, next: Next
 };
 
 const mapErrorToStatusCode = (err: ErrorWithStatus): number => {
-  if (err instanceof NotFoundError) return 404;
+  if (err instanceof NotFoundError) return status.NOT_FOUND;
   if (err instanceof ZodError) return 400;
   if (err instanceof UnauthorizedError) return 401;
   if (err instanceof ForbiddenError) return 403;

@@ -315,8 +315,8 @@ export class ContactDTOMapper {
       firstName: dto.firstName,
       lastName: dto.lastName,
 
-      // Division relationship (optional)
-      ...(dto.divisionId && { divisionId: dto.divisionId }),
+      // Division relationship (required - fallback needed if not provided)
+      divisionId: dto.divisionId || '', // TODO: Get default division ID from company
 
       // Optional personal info
       email: dto.email ?? null,
@@ -380,7 +380,7 @@ export class ContactDTOMapper {
     if (dto.companyName !== undefined) updateData.companyName = dto.companyName;
 
     // Division Assignment
-    if (dto.divisionId !== undefined) {
+    if (dto.divisionId !== undefined && dto.divisionId !== null) {
       updateData.divisionId = dto.divisionId;
     }
 

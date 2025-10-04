@@ -228,7 +228,7 @@ export class DivisionRepository {
   }
 
   // Entity reassignment methods
-  async reassignUser(userId: string, newDivisionId: string | null, updatedBy: string): Promise<boolean> {
+  async reassignUser(userId: string, newDivisionId: string, updatedBy: string): Promise<boolean> {
     try {
       await this.prisma.user.update({
         where: { id: userId },
@@ -244,7 +244,7 @@ export class DivisionRepository {
     }
   }
 
-  async reassignContact(contactId: string, newDivisionId: string | null, updatedBy: string): Promise<boolean> {
+  async reassignContact(contactId: string, newDivisionId: string, updatedBy: string): Promise<boolean> {
     try {
       await this.prisma.contact.update({
         where: { id: contactId },
@@ -260,7 +260,7 @@ export class DivisionRepository {
     }
   }
 
-  async reassignProperty(propertyId: string, newDivisionId: string | null, updatedBy: string): Promise<boolean> {
+  async reassignProperty(propertyId: string, newDivisionId: string, updatedBy: string): Promise<boolean> {
     try {
       await this.prisma.property.update({
         where: { id: propertyId },
@@ -276,7 +276,7 @@ export class DivisionRepository {
     }
   }
 
-  async reassignOpportunity(opportunityId: string, newDivisionId: string | null, updatedBy: string): Promise<boolean> {
+  async reassignOpportunity(opportunityId: string, newDivisionId: string, updatedBy: string): Promise<boolean> {
     try {
       await this.prisma.opportunity.update({
         where: { id: opportunityId },
@@ -292,7 +292,7 @@ export class DivisionRepository {
     }
   }
 
-  async reassignProject(projectId: string, newDivisionId: string | null, updatedBy: string): Promise<boolean> {
+  async reassignProject(projectId: string, newDivisionId: string, updatedBy: string): Promise<boolean> {
     try {
       await this.prisma.project.update({
         where: { id: projectId },

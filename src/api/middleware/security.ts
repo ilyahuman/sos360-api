@@ -13,30 +13,33 @@ import { config } from '@/config/environment';
  * Essential for preventing host header injection attacks.
  */
 export const hostHeaderValidation = (allowedHosts: string[] = []) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (req: Request, res: Response, next: NextFunction) => {
     const host = req.get('Host');
 
     if (!host) {
       logSecurityEvent('Missing Host Header', { ip: req.ip, url: req.originalUrl });
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Bad Request: Host header is required',
         errors: [{ code: 'MISSING_HOST_HEADER', message: 'Host header is required' }],
       });
+      return;
     }
 
     // In development, allow localhost with any port for convenience.
     if (config.NODE_ENV === 'development' && host.startsWith('localhost:')) {
-      return next();
+      next();
+      return;
     }
 
     if (allowedHosts.length > 0 && !allowedHosts.includes(host)) {
       logSecurityEvent('Invalid Host Header', { host, allowedHosts, ip: req.ip });
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Bad Request: Invalid host header',
         errors: [{ code: 'INVALID_HOST_HEADER', message: 'Invalid host header' }],
       });
+      return;
     }
 
     next();
@@ -63,11 +66,12 @@ export const userAgentValidation = (req: Request, res: Response, next: NextFunct
 
   if (maliciousPatterns.some(pattern => pattern.test(userAgent))) {
     logSecurityEvent('Malicious User-Agent Detected', { userAgent, ip: req.ip });
-    return res.status(403).json({
+    res.status(403).json({
       success: false,
       message: 'Forbidden',
       errors: [{ code: 'FORBIDDEN_USER_AGENT', message: 'Access denied' }],
     });
+    return;
   }
 
   next();

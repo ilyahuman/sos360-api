@@ -4,7 +4,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import { hash } from '@node-rs/argon2';
 
 const prisma = new PrismaClient();
 
@@ -25,6 +25,7 @@ async function main(): Promise<void> {
     await prisma.property.deleteMany();
     await prisma.contact.deleteMany();
     await prisma.user.deleteMany();
+    await prisma.division.deleteMany();
     await prisma.company.deleteMany();
   }
 
@@ -71,10 +72,27 @@ async function main(): Promise<void> {
     },
   });
 
+  // Create default "General" division for the company
+  console.log('📂 Creating default division...');
+
+  const generalDivision = await prisma.division.create({
+    data: {
+      companyId: company.id,
+      name: 'General',
+      description: 'Default division for all company operations',
+      divisionType: 'OPERATIONAL',
+      isActive: true,
+      colorCode: '#007bff',
+      sortOrder: 0,
+      createdBy: 'system',
+      updatedBy: 'system',
+    },
+  });
+
   // Create one admin user for the company
   console.log('👥 Creating admin user...');
 
-  const hashedPassword = await bcrypt.hash('admin123', 12);
+  const hashedPassword = await hash('admin123');
 
   const adminUser = await prisma.user.create({
     data: {
@@ -88,6 +106,7 @@ async function main(): Promise<void> {
       isActive: true,
       emailVerified: true,
       companyId: company.id,
+      divisionId: generalDivision.id,
       createdBy: 'system',
       updatedBy: 'system',
     },
@@ -111,6 +130,7 @@ async function main(): Promise<void> {
       tags: ['HOT_LEAD', 'COMMERCIAL'],
       notes: 'High-value commercial client',
       companyId: company.id,
+      divisionId: generalDivision.id,
       createdBy: adminUser.id,
       updatedBy: adminUser.id,
     },
@@ -132,6 +152,7 @@ async function main(): Promise<void> {
       tags: ['REPEAT_CUSTOMER'],
       notes: 'Long-term client with multiple properties',
       companyId: company.id,
+      divisionId: generalDivision.id,
       createdBy: adminUser.id,
       updatedBy: adminUser.id,
     },
@@ -152,6 +173,7 @@ async function main(): Promise<void> {
       tags: ['HOA', 'RESIDENTIAL'],
       notes: 'HOA with 200+ homes',
       companyId: company.id,
+      divisionId: generalDivision.id,
       createdBy: adminUser.id,
       updatedBy: adminUser.id,
     },
@@ -172,6 +194,7 @@ async function main(): Promise<void> {
       tags: ['MUNICIPAL', 'GOVERNMENT'],
       notes: 'City contract bidding contact',
       companyId: company.id,
+      divisionId: generalDivision.id,
       createdBy: adminUser.id,
       updatedBy: adminUser.id,
     },
@@ -200,6 +223,7 @@ async function main(): Promise<void> {
       tags: ['commercial', 'high-traffic'],
       primaryContactId: contact1.id,
       companyId: company.id,
+      divisionId: generalDivision.id,
       createdBy: adminUser.id,
       updatedBy: adminUser.id,
     },
@@ -223,6 +247,7 @@ async function main(): Promise<void> {
       tags: ['retail', 'large-project'],
       primaryContactId: contact2.id,
       companyId: company.id,
+      divisionId: generalDivision.id,
       createdBy: adminUser.id,
       updatedBy: adminUser.id,
     },
@@ -246,6 +271,7 @@ async function main(): Promise<void> {
       tags: ['commercial', 'office'],
       primaryContactId: contact2.id,
       companyId: company.id,
+      divisionId: generalDivision.id,
       createdBy: adminUser.id,
       updatedBy: adminUser.id,
     },
@@ -270,6 +296,7 @@ async function main(): Promise<void> {
       tags: ['hoa', 'residential'],
       primaryContactId: contact3.id,
       companyId: company.id,
+      divisionId: generalDivision.id,
       createdBy: adminUser.id,
       updatedBy: adminUser.id,
     },
@@ -295,6 +322,7 @@ async function main(): Promise<void> {
       tags: ['municipal', 'government'],
       primaryContactId: contact4.id,
       companyId: company.id,
+      divisionId: generalDivision.id,
       createdBy: adminUser.id,
       updatedBy: adminUser.id,
     },
@@ -320,6 +348,7 @@ async function main(): Promise<void> {
       tags: ['municipal', 'public-facility'],
       primaryContactId: contact4.id,
       companyId: company.id,
+      divisionId: generalDivision.id,
       createdBy: adminUser.id,
       updatedBy: adminUser.id,
     },
@@ -328,6 +357,7 @@ async function main(): Promise<void> {
   console.log('✅ Database seed completed successfully!');
   console.log('\n📊 Summary:');
   console.log(`- Company: 1 (Premier Paving Solutions)`);
+  console.log(`- Divisions: 1 (General)`);
   console.log(`- Users: 1 (Admin User)`);
   console.log(`- Contacts: 4`);
   console.log(`- Properties: 6`);
@@ -335,6 +365,7 @@ async function main(): Promise<void> {
   console.log(`Email: admin@premierpaving.com`);
   console.log(`Password: admin123`);
   console.log(`\n🏢 Company ID: ${company.id}`);
+  console.log(`📂 Division ID: ${generalDivision.id}`);
   console.log(`👤 Admin User ID: ${adminUser.id}`);
 }
 

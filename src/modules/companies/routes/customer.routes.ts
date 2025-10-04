@@ -1,63 +1,24 @@
+/**
+ * routes/customer.routes.ts
+ *
+ * Defines the Express routes for the customer-facing company flow.
+ * These routes are tenant-scoped and rely on the authenticated user's context.
+ */
+
 import { Router } from 'express';
-import { prisma } from '@/infrastructure/database/prisma.client';
-import { CompanyRepository } from '../companies.repository';
-import { CompanyService } from '../companies.service';
-import { CompanyController } from '../companies.controller';
-import {
-  createCompanyValidationRules,
-  updateCompanyValidationRules,
-  updateSettingsValidationRules
-} from '../companies.validator';
+import { CompanyCustomerController } from '../customer/companies.customer.controller';
+import { validate } from '@/shared/middleware/validate';
+import { updateCompanySchema } from '../companies.schema';
+import { isAuthenticated } from '@/shared/middleware/auth'; // Assuming auth middleware exists
 
-const router: Router = Router();
+export default (controller: CompanyCustomerController): Router => {
+  const router = Router();
 
-// --- Dependency Injection Setup ---
-const companyRepository = new CompanyRepository(prisma);
-const companyService = new CompanyService(companyRepository);
-const companyController = new CompanyController(companyService);
+  // All customer routes require authentication.
+  router.use(isAuthenticated);
 
-// --- Customer Routes (No Authentication Required for now) ---
+  router.get('/profile', controller.getProfile);
+  router.put('/profile', validate(updateCompanySchema), controller.updateProfile);
 
-/**
- * Create new company
- * POST /api/v1/companies
- */
-router.post('/', createCompanyValidationRules(), companyController.createCompany);
-
-/**
- * Get company by ID
- * GET /api/v1/companies/:id
- */
-router.get('/:id', companyController.getCompanyById);
-
-/**
- * Update company by ID
- * PUT /api/v1/companies/:id
- */
-router.put('/:id', updateCompanyValidationRules(), companyController.updateCompanyById);
-
-/**
- * Soft delete company
- * DELETE /api/v1/companies/:id
- */
-router.delete('/:id', companyController.softDeleteCompany);
-
-/**
- * Get company statistics
- * GET /api/v1/companies/:id/stats
- */
-router.get('/:id/stats', companyController.getCompanyStats);
-
-/**
- * Get company settings
- * GET /api/v1/companies/:id/settings
- */
-router.get('/:id/settings', companyController.getCompanySettings);
-
-/**
- * Update company settings
- * PUT /api/v1/companies/:id/settings
- */
-router.put('/:id/settings', updateSettingsValidationRules(), companyController.updateCompanySettings);
-
-export default router;
+  return router;
+};

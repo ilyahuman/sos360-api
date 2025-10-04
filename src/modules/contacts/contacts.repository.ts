@@ -3,7 +3,8 @@
  * Data access layer using Prisma with proper types
  */
 
-import { PrismaClient, Contact, Prisma } from '@prisma/client';
+import { Contact, Prisma } from '@prisma/client';
+import { ExtendedPrismaClient } from '@/infrastructure/database/prisma.client';
 import {
   CreateContactDTO,
   UpdateContactDTO,
@@ -13,7 +14,7 @@ import {
 } from './contacts.dto';
 
 export class ContactRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: ExtendedPrismaClient) {}
 
   async create(data: CreateContactDTO, companyId: string, userId: string | null): Promise<Contact> {
     const input = ContactDTOMapper.toCreateInput(data, companyId, userId);
