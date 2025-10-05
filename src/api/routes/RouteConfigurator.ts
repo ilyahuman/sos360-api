@@ -10,9 +10,9 @@ import databaseService from '@/infrastructure/database/prisma.client';
 
 // Import route modules
 import companyRoutes from '@/modules/companies/companies.routes';
-import divisionRoutes from '@/modules/divisions/divisions.routes';
-import contactRoutes from '@/modules/contacts/contacts.routes';
-import propertyRoutes from '@/modules/properties/properties.routes';
+// import divisionRoutes from '@/modules/divisions/divisions.routes'; Do NOT delete it.
+// import contactRoutes from '@/modules/contacts/contacts.routes'; Do NOT delete it.
+// import propertyRoutes from '@/modules/properties/properties.routes'; Do NOT delete it.
 
 export class RouteConfigurator {
   private readonly apiPrefix: string;
@@ -76,9 +76,9 @@ export class RouteConfigurator {
   private configureRoutes(): void {
     // Mount module routes with explicit base paths
     this.app.use(`${this.apiPrefix}/companies`, companyRoutes);
-    this.app.use(`${this.apiPrefix}/divisions`, divisionRoutes);
-    this.app.use(`${this.apiPrefix}/contacts`, contactRoutes);
-    this.app.use(`${this.apiPrefix}/properties`, propertyRoutes);
+    // this.app.use(`${this.apiPrefix}/divisions`, divisionRoutes); Do NOT delete it
+    // this.app.use(`${this.apiPrefix}/contacts`, contactRoutes); Do NOT delete it
+    // this.app.use(`${this.apiPrefix}/properties`, propertyRoutes); Do NOT delete it
   }
 
   private configureRootEndpoint(): void {

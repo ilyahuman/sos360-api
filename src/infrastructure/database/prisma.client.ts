@@ -1,6 +1,11 @@
 /**
  * Prisma Client Configuration (Minimized for MVP)
- * Exports a basic, un-extended Prisma Client instance.
+ * Exports a basic Prisma Client instance.
+ *
+ * Note on Soft Deletes:
+ * Prisma 6.x deprecated $use() middleware. Soft delete logic is now implemented
+ * directly in repository methods by checking deletedAt: null in where clauses.
+ * This provides better type safety and explicit control.
  */
 
 import { PrismaClient } from '@prisma/client';

@@ -1,6 +1,4 @@
 /**
- * companies.repository.ts
- *
  * This file implements the data access layer for the Companies module.
  * It is a "dumb" repository that only executes Prisma queries. It receives a Prisma
  * client instance and has no knowledge of business logic or tenancy rules beyond
@@ -8,7 +6,6 @@
  */
 
 import { Prisma, PrismaClient } from '@prisma/client';
-import { CreateCompanyInput, UpdateCompanyInput } from './companies.schema';
 import { NotFoundError } from '@/api/types';
 
 export class CompanyRepository {
@@ -62,7 +59,7 @@ export class CompanyRepository {
   /**
    * Creates a new company.
    */
-  async create(data: CreateCompanyInput) {
+  async create(data: Prisma.CompanyCreateInput) {
     return this.prisma.company.create({ data });
   }
 
@@ -70,7 +67,7 @@ export class CompanyRepository {
    * Updates a company's data, strictly scoped to a tenant.
    * This method is safe for both customer and admin flows if companyId is provided.
    */
-  async update(id: string, data: UpdateCompanyInput, companyId?: string) {
+  async update(id: string, data: Prisma.CompanyUpdateInput, companyId?: string) {
     const company = await this.prisma.company.findFirst({
       where: { id, ...(companyId && { id: companyId }) },
     });

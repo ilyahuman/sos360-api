@@ -284,7 +284,7 @@ model Division {
 
   // Management
   divisionManagerId String?
-  parentDivisionId  String?
+  parentDivisionId  String? // DEPRECATED: Use DivisionClosure table for hierarchy queries. Kept for backward compatibility during migration.
 
   // Business Configuration
   settings Json @default("{}")
@@ -315,6 +315,10 @@ model Division {
   divisionManager User?      @relation("DivisionManager", fields: [divisionManagerId], references: [id])
   parentDivision  Division?  @relation("DivisionHierarchy", fields: [parentDivisionId], references: [id])
   childDivisions  Division[] @relation("DivisionHierarchy")
+
+  // Closure table relationships
+  ancestorPaths   DivisionClosure[] @relation("Ancestor")
+  descendantPaths DivisionClosure[] @relation("Descendant")
 
   // Business relationships
   users         User[]
@@ -393,6 +397,31 @@ model WebFormSubmission {
   @@index([leadScore])
   @@index([createdAt])
   @@map("web_form_submissions")
+}
+
+// Closure Table Pattern for Division Hierarchies
+// Enables O(1) queries for: all ancestors, all descendants, depth checks, subtree operations
+// Each row represents a path from ancestor to descendant with the depth between them
+// Self-referencing rows (ancestorId = descendantId, depth = 0) represent direct nodes
+model DivisionClosure {
+  id           String @id @default(uuid())
+  ancestorId   String
+  descendantId String
+  depth        Int // 0 = self, 1 = direct parent/child, 2+ = grandparent/grandchild, etc.
+
+  // Relationships
+  ancestor   Division @relation("Ancestor", fields: [ancestorId], references: [id], onDelete: Cascade)
+  descendant Division @relation("Descendant", fields: [descendantId], references: [id], onDelete: Cascade)
+
+  // Audit Trail
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([ancestorId, descendantId])
+  @@index([descendantId, depth]) // Query all ancestors of a division with depth
+  @@index([ancestorId, depth]) // Query all descendants of a division with depth
+  @@index([ancestorId, descendantId]) // Redundant with unique but explicit for path lookup
+  @@map("division_closure")
 }
 
 model User {
@@ -528,8 +557,8 @@ model Contact {
   // Relationships
   company  Company  @relation(fields: [companyId], references: [id], onDelete: Restrict)
   division Division @relation(fields: [divisionId], references: [id], onDelete: Restrict)
-  creator  User?     @relation("ContactCreator", fields: [createdBy], references: [id])
-  updater  User?     @relation("ContactUpdater", fields: [updatedBy], references: [id])
+  creator  User?    @relation("ContactCreator", fields: [createdBy], references: [id])
+  updater  User?    @relation("ContactUpdater", fields: [updatedBy], references: [id])
 
   // Business relationships
   properties         Property[]
@@ -561,7 +590,9 @@ model Property {
 
   // Location
   address     Json // {"street": "123 Main St", "city": "Dallas", "state": "TX", "zip": "75201", "country": "US"}
-  coordinates String? // PostGIS point for lat/lng
+  coordinates String? // Raplaced by latitude & longitude fields. But lets keep it for future possible needs.
+  latitude    Decimal? @db.Decimal(9, 6) // latitude in decimal
+  longitude   Decimal? @db.Decimal(10, 6) // longitude in decimal
 
   // Property Details
   totalArea          Decimal? @db.Decimal(12, 2)
@@ -604,9 +635,9 @@ model Property {
   // Relationships
   company        Company  @relation(fields: [companyId], references: [id], onDelete: Restrict)
   division       Division @relation(fields: [divisionId], references: [id], onDelete: Restrict)
-  primaryContact Contact   @relation(fields: [primaryContactId], references: [id], onDelete: Restrict)
-  creator        User?     @relation("PropertyCreator", fields: [createdBy], references: [id])
-  updater        User?     @relation("PropertyUpdater", fields: [updatedBy], references: [id])
+  primaryContact Contact  @relation(fields: [primaryContactId], references: [id], onDelete: Restrict)
+  creator        User?    @relation("PropertyCreator", fields: [createdBy], references: [id])
+  updater        User?    @relation("PropertyUpdater", fields: [updatedBy], references: [id])
 
   // Business relationships
   opportunities Opportunity[]

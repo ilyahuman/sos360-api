@@ -6,8 +6,9 @@
  * a customer can only interact with their own company's data.
  */
 
+import { Prisma } from '@prisma/client';
 import { CompanyRepository } from '../companies.repository';
-import { UpdateCompanyInput } from '../companies.schema';
+import { updateCompanyDTO } from '../companies.schema';
 import { NotFoundError } from '@/api/types';
 
 export class CompanyCustomerService {
@@ -33,10 +34,17 @@ export class CompanyCustomerService {
    * @param companyId - The ID of the company from the user's request context.
    * @param data - The company data to update.
    */
-  async updateCompanyProfile(companyId: string, data: UpdateCompanyInput) {
+  async updateCompanyProfile(companyId: string, data: updateCompanyDTO) {
     // The repository's update method handles the tenant check.
     // We explicitly remove admin-only fields from the input.
-    const { isActive, ...customerSafeData } = data;
-    return this.companyRepository.update(companyId, customerSafeData, companyId);
+    const { isActive, ...rest } = data;
+
+    const updateData: Prisma.CompanyUpdateInput = {};
+    if (rest.businessName !== undefined) updateData.businessName = rest.businessName;
+    if (rest.address !== undefined) updateData.address = rest.address as Prisma.InputJsonValue;
+    if (rest.phone !== undefined) updateData.phone = rest.phone;
+    if (rest.email !== undefined) updateData.email = rest.email;
+
+    return this.companyRepository.update(companyId, updateData, companyId);
   }
 }

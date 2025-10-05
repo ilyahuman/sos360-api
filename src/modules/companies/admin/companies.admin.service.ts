@@ -8,7 +8,7 @@
 
 import { Prisma } from '@prisma/client';
 import { CompanyRepository } from '../companies.repository';
-import { CreateCompanyInput, ListCompaniesQuery, UpdateCompanyInput } from '../companies.schema';
+import { createCompanyDTO, listCompaniesQueryDTO, updateCompanyDTO } from '../companies.schema';
 import { NotFoundError } from '@/api/types';
 import { PaginatedCompaniesResponse } from '../companies.types';
 
@@ -19,15 +19,26 @@ export class CompanyAdminService {
    * Creates a new company.
    * @param data - The data for the new company.
    */
-  async createCompany(data: CreateCompanyInput) {
-    return this.companyRepository.create(data);
+  async createCompany(data: createCompanyDTO) {
+    const createData: Prisma.CompanyCreateInput = {
+      businessName: data.businessName,
+    };
+
+    if (data.address !== undefined && data.address !== null) {
+      createData.address = data.address as Prisma.InputJsonValue;
+    }
+    if (data.phone !== undefined && data.phone !== null) {
+      createData.phone = data.phone;
+    }
+
+    return this.companyRepository.create(createData);
   }
 
   /**
    * Retrieves a paginated list of all companies.
    * @param query - Query parameters for pagination, sorting, and searching.
    */
-  async getAllCompanies(query: ListCompaniesQuery): Promise<PaginatedCompaniesResponse> {
+  async getAllCompanies(query: listCompaniesQueryDTO): Promise<PaginatedCompaniesResponse> {
     const { page, limit, sortBy, sortOrder, search } = query;
     const skip = (page - 1) * limit;
 
@@ -78,9 +89,17 @@ export class CompanyAdminService {
    * @param id - The UUID of the company to update.
    * @param data - The company data to update.
    */
-  async updateCompany(id: string, data: UpdateCompanyInput) {
+  async updateCompany(id: string, data: updateCompanyDTO) {
     // The repository's update method will throw if the company doesn't exist.
-    return this.companyRepository.update(id, data);
+    const updateData: Prisma.CompanyUpdateInput = {
+      ...(data.businessName !== undefined && { businessName: data.businessName }),
+      ...(data.address !== undefined && { address: data.address as Prisma.InputJsonValue }),
+      ...(data.phone !== undefined && { phone: data.phone }),
+      ...(data.email !== undefined && { email: data.email }),
+      ...(data.isActive !== undefined && { isActive: data.isActive }),
+    };
+
+    return this.companyRepository.update(id, updateData);
   }
 
   /**
