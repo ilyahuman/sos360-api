@@ -19,7 +19,7 @@ export class CompanyCustomerService {
    * @param companyId - The ID of the company from the user's request context.
    */
   async getCompanyProfile(companyId: string) {
-    const company = await this.companyRepository.findByIdAndTenant(companyId, companyId);
+    const company = await this.companyRepository.findByIdScoped(companyId);
 
     if (!company) {
       // This case should be rare if the JWT is valid, but it's a critical security check.
@@ -45,6 +45,6 @@ export class CompanyCustomerService {
     if (rest.phone !== undefined) updateData.phone = rest.phone;
     if (rest.email !== undefined) updateData.email = rest.email;
 
-    return this.companyRepository.update(companyId, updateData, companyId);
+    return this.companyRepository.updateScoped(companyId, updateData);
   }
 }

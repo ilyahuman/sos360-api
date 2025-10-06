@@ -1,10 +1,10 @@
 /**
- * This file implements the data access layer for the Companies module.
- * It is a "dumb" repository that only executes Prisma queries. It receives a Prisma
- * client instance and has no knowledge of business logic or tenancy rules beyond
- * what is explicitly passed into its methods.
+ * companies.repository.ts (Refactored)
+ *
+ * The data access layer is now more efficient and relies on Prisma's atomic
+ * operations. Unnecessary `findFirst` calls before updates/deletes are removed.
+ * The global error handler will catch Prisma's 'P2025' (Record Not Found) errors.
  */
-
 import { Prisma, PrismaClient } from '@prisma/client';
 import { NotFoundError } from '@/api/types';
 
@@ -16,82 +16,101 @@ export class CompanyRepository {
    * Used by the admin flow.
    */
   async findById(id: string) {
-    return this.prisma.company.findUnique({ where: { id } });
+    return this.prisma.company.findUnique({ where: { id, deletedAt: null } });
   }
 
   /**
-   * Finds a single company by its ID, strictly scoped to a tenant.
-   * Used by the customer flow to ensure they can only access their own company.
+   * Finds a single company by its ID, strictly scoped to a tenantId (which is the same as the ID).
+   * Used by the customer flow.
    */
-  async findByIdAndTenant(id: string, companyId: string) {
-    return this.prisma.company.findFirst({
-      where: { id, AND: { id: companyId } },
+  async findByIdScoped(companyId: string) {
+    // Corrected logic: The company ID *is* the tenant ID in this context.
+    return this.prisma.company.findUnique({
+      where: { id: companyId, deletedAt: null },
     });
   }
 
   /**
-   * Retrieves a paginated list of all companies. Does not enforce tenancy.
-   * Used by the admin flow.
+   * Retrieves a paginated list of companies.
    */
   async findAll(params: {
     skip: number;
     take: number;
     orderBy: Prisma.CompanyOrderByWithRelationInput;
-    where?: Prisma.CompanyWhereInput | undefined;
+    where?: Prisma.CompanyWhereInput;
   }) {
-    const { skip, take, orderBy, where } = params;
-    return this.prisma.company.findMany({
-      skip,
-      take,
-      orderBy,
-      ...(where && { where }),
-    });
+    return this.prisma.company.findMany({ ...params, where: { ...params.where, deletedAt: null } });
   }
 
   /**
    * Counts the total number of companies matching a query.
-   * Used for pagination metadata in the admin flow.
    */
-  async countAll(where?: Prisma.CompanyWhereInput | undefined) {
-    return this.prisma.company.count(where ? { where } : undefined);
+  async countAll(where?: Prisma.CompanyWhereInput) {
+    return this.prisma.company.count({ where: { ...where, deletedAt: null } });
   }
 
   /**
-   * Creates a new company.
+   * Creates a new company within a transaction.
+   * This now accepts a Prisma Transaction Client to ensure atomicity.
    */
-  async create(data: Prisma.CompanyCreateInput) {
-    return this.prisma.company.create({ data });
+  async create(data: Prisma.CompanyCreateInput, tx?: Prisma.TransactionClient) {
+    const db = tx || this.prisma;
+    return db.company.create({ data });
+  }
+
+  /**
+   * Updates a company's data. Does not enforce tenancy.
+   * Used by the admin flow.
+   */
+  async update(id: string, data: Prisma.CompanyUpdateInput) {
+    // Simplified: Let Prisma handle the not-found case. It will throw an error
+    // that our global error handler will catch and format as a 404.
+    try {
+      return await this.prisma.company.update({
+        where: { id },
+        data,
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        throw new NotFoundError('Company', id);
+      }
+      throw error;
+    }
   }
 
   /**
    * Updates a company's data, strictly scoped to a tenant.
-   * This method is safe for both customer and admin flows if companyId is provided.
+   * Used by the customer flow.
    */
-  async update(id: string, data: Prisma.CompanyUpdateInput, companyId?: string) {
-    const company = await this.prisma.company.findFirst({
-      where: { id, ...(companyId && { id: companyId }) },
-    });
-
-    if (!company) {
-      throw new NotFoundError('Company', id);
+  async updateScoped(companyId: string, data: Prisma.CompanyUpdateInput) {
+    try {
+      return await this.prisma.company.update({
+        where: { id: companyId },
+        data,
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        throw new NotFoundError('Company', companyId);
+      }
+      throw error;
     }
-
-    return this.prisma.company.update({
-      where: { id },
-      data,
-    });
   }
 
   /**
-   * Deletes a company by its ID. Does not enforce tenancy.
-   * Used by the admin flow.
+   * Soft-deletes a company by its ID by setting the `deletedAt` field.
+   * This is safer than hard deletion.
    */
-  async delete(id: string) {
-    // Ensure the company exists before attempting to delete
-    const company = await this.findById(id);
-    if (!company) {
-      throw new NotFoundError('Company', id);
+  async delete(id: string): Promise<void> {
+    try {
+      await this.prisma.company.update({
+        where: { id },
+        data: { deletedAt: new Date() },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        throw new NotFoundError('Company', id);
+      }
+      throw error;
     }
-    await this.prisma.company.delete({ where: { id } });
   }
 }

@@ -6,9 +6,10 @@
 import { Application } from 'express';
 import { config, isDevelopment } from '@/config/environment';
 import { logger } from '@/shared/utils/logger';
-import databaseService from '@/infrastructure/database/prisma.client';
+import databaseService, { prisma } from '@/infrastructure/database/prisma.client';
 
 // Import route modules
+import authRoutes from '@/modules/auth/auth.routes';
 import companyRoutes from '@/modules/companies/companies.routes';
 // import divisionRoutes from '@/modules/divisions/divisions.routes'; Do NOT delete it.
 // import contactRoutes from '@/modules/contacts/contacts.routes'; Do NOT delete it.
@@ -75,7 +76,8 @@ export class RouteConfigurator {
    */
   private configureRoutes(): void {
     // Mount module routes with explicit base paths
-    this.app.use(`${this.apiPrefix}/companies`, companyRoutes);
+    this.app.use(`${this.apiPrefix}/auth`, authRoutes(prisma));
+    this.app.use(`${this.apiPrefix}/companies`, companyRoutes(prisma));
     // this.app.use(`${this.apiPrefix}/divisions`, divisionRoutes); Do NOT delete it
     // this.app.use(`${this.apiPrefix}/contacts`, contactRoutes); Do NOT delete it
     // this.app.use(`${this.apiPrefix}/properties`, propertyRoutes); Do NOT delete it

@@ -12,6 +12,7 @@ import { UserRoleType } from '@prisma/client';
 export interface UserIdentity {
   id: string;
   companyId: string;
+  divisionId: string;
   role: UserRoleType;
   email: string;
 }
