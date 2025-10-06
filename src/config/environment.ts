@@ -134,7 +134,9 @@ const environmentSchema = z
     LOG_MAX_SIZE: z.string().default('20m'),
 
     // CORS
-    CORS_ORIGIN: z.union([z.array(z.string()), stringToArray]).default(['http://localhost:3000']),
+    CORS_ORIGIN: z
+      .union([z.array(z.string()), stringToArray])
+      .default(['https://sos360-web-sand.vercel.app']),
     CORS_METHODS: z
       .union([z.array(z.string()), stringToArray])
       .default(['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS']),
